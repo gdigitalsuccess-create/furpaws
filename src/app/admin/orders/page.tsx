@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { formatPrice } from '@/lib/pricing';
 import OrderStatusSelect from '@/components/admin/OrderStatusSelect';

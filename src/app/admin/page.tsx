@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { ShoppingCart, DollarSign, Clock, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';

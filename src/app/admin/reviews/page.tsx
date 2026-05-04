@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { createAdminClient } from '@/lib/supabase/admin';
 import ReviewActionButtons from '@/components/admin/ReviewActionButtons';
 import { Star } from 'lucide-react';
