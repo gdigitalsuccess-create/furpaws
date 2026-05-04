@@ -33,7 +33,6 @@ const schema = z.object({
   is_active:       z.boolean(),
   is_featured:     z.boolean(),
   is_new:          z.boolean(),
-  specs_raw:       z.string().optional(),
 });
 
 type Values = z.infer<typeof schema>;
@@ -75,6 +74,13 @@ export default function ProductForm({ categories, brands = [], product }: Props)
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Specs key-value rows
+  const initialSpecs = product?.specs && typeof product.specs === 'object' && !Array.isArray(product.specs)
+    ? Object.entries(product.specs as Record<string, string>).map(([key, value]) => ({ key, value: String(value) }))
+    : [];
+  const [specRows, setSpecRows] = useState<{ key: string; value: string }[]>(initialSpecs);
+  const [newSpec, setNewSpec] = useState({ key: '', value: '' });
+
   // Variants
   const initialVariants = parseVariants(product?.variants);
   const [hasVariants, setHasVariants] = useState(initialVariants.length > 0);
@@ -106,7 +112,6 @@ export default function ProductForm({ categories, brands = [], product }: Props)
       is_active:      product.is_active,
       is_featured:    product.is_featured,
       is_new:         (product as Product & { is_new?: boolean }).is_new ?? false,
-      specs_raw:      product.specs ? JSON.stringify(product.specs, null, 2) : '',
     } : {
       is_active: true,
       is_featured: false,
@@ -189,8 +194,9 @@ export default function ProductForm({ categories, brands = [], product }: Props)
     setError('');
     setLoading(true);
     try {
-      let specs: unknown = {};
-      try { specs = values.specs_raw ? JSON.parse(values.specs_raw) : {}; } catch { specs = {}; }
+      const specs = Object.fromEntries(
+        specRows.filter((r) => r.key.trim()).map((r) => [r.key.trim(), r.value.trim()])
+      );
 
       const body = {
         name_en:        values.name_en,
@@ -509,10 +515,98 @@ export default function ProductForm({ categories, brands = [], product }: Props)
         )}
       </div>
 
-      {/* Specs JSON */}
-      <div>
-        <label className={labelCls}>Specs (JSON object, optional)</label>
-        <textarea {...register('specs_raw')} rows={3} placeholder='{"Weight": "500g", "Material": "Nylon"}' className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-mono text-xs text-gray-900 placeholder:text-gray-400 focus:border-pink-primary focus:outline-none focus:ring-2 focus:ring-pink-primary/20 resize-none" />
+      {/* Specs key-value editor */}
+      <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-3">
+        <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+          Characteristics (optional)
+        </span>
+
+        {/* Existing rows */}
+        {specRows.length > 0 && (
+          <div className="space-y-2">
+            <div className="grid grid-cols-[1fr_1fr_32px] gap-2 px-1">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Property</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Value</span>
+              <span />
+            </div>
+            {specRows.map((row, idx) => (
+              <div key={idx} className="grid grid-cols-[1fr_1fr_32px] gap-2 items-center">
+                <input
+                  value={row.key}
+                  onChange={(e) => setSpecRows((prev) => prev.map((r, i) => i === idx ? { ...r, key: e.target.value } : r))}
+                  placeholder="Weight"
+                  className={inputCls}
+                />
+                <input
+                  value={row.value}
+                  onChange={(e) => setSpecRows((prev) => prev.map((r, i) => i === idx ? { ...r, value: e.target.value } : r))}
+                  placeholder="500g"
+                  className={inputCls}
+                />
+                <button
+                  type="button"
+                  onClick={() => setSpecRows((prev) => prev.filter((_, i) => i !== idx))}
+                  className="flex h-10 w-8 items-center justify-center rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Add new spec row */}
+        <div className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end">
+          <div>
+            {specRows.length === 0 && <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-gray-400">Property</label>}
+            <input
+              value={newSpec.key}
+              onChange={(e) => setNewSpec((p) => ({ ...p, key: e.target.value }))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && newSpec.key.trim()) {
+                  e.preventDefault();
+                  setSpecRows((p) => [...p, { key: newSpec.key.trim(), value: newSpec.value.trim() }]);
+                  setNewSpec({ key: '', value: '' });
+                }
+              }}
+              placeholder="Weight / Size / Material…"
+              className={inputCls}
+            />
+          </div>
+          <div>
+            {specRows.length === 0 && <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-gray-400">Value</label>}
+            <input
+              value={newSpec.value}
+              onChange={(e) => setNewSpec((p) => ({ ...p, value: e.target.value }))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && newSpec.key.trim()) {
+                  e.preventDefault();
+                  setSpecRows((p) => [...p, { key: newSpec.key.trim(), value: newSpec.value.trim() }]);
+                  setNewSpec({ key: '', value: '' });
+                }
+              }}
+              placeholder="500g / 30cm / Nylon…"
+              className={inputCls}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              if (!newSpec.key.trim()) return;
+              setSpecRows((p) => [...p, { key: newSpec.key.trim(), value: newSpec.value.trim() }]);
+              setNewSpec({ key: '', value: '' });
+            }}
+            disabled={!newSpec.key.trim()}
+            className="flex h-10 items-center gap-1.5 rounded-lg bg-pink-primary px-3 text-sm font-semibold text-white hover:bg-pink-accent disabled:opacity-40 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Add
+          </button>
+        </div>
+
+        {specRows.length === 0 && (
+          <p className="text-xs text-gray-400">No characteristics — leave empty if not needed.</p>
+        )}
       </div>
 
       {/* Flags */}
