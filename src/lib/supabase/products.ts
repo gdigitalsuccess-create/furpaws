@@ -125,14 +125,11 @@ export async function fetchSimilarProducts(
 export async function fetchNewProducts(limit = 8): Promise<ProductRow[]> {
   try {
     const supabase = await createClient();
-    const since = new Date();
-    since.setDate(since.getDate() - 30);
-
     const { data } = await supabase
       .from('products')
       .select('id, name_en, name_ar, slug, price_retail, images, brand, stock_quantity, is_featured')
       .eq('is_active', true)
-      .gte('created_at', since.toISOString())
+      .eq('is_new', true)
       .order('created_at', { ascending: false })
       .limit(limit);
 

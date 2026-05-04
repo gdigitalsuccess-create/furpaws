@@ -51,6 +51,7 @@ export interface Database {
           stock_quantity: number;
           is_active: boolean;
           is_featured: boolean;
+          is_new: boolean;
           created_at: string;
           updated_at: string;
         };

@@ -6,7 +6,7 @@ import { formatPrice } from '@/lib/pricing';
 import DeleteProductButton from '@/components/admin/DeleteProductButton';
 import type { Product } from '@/types/database';
 
-type ProductRow = Pick<Product, 'id' | 'name_en' | 'brand' | 'price_retail' | 'stock_quantity' | 'is_active' | 'is_featured' | 'category_id'>;
+type ProductRow = Pick<Product, 'id' | 'name_en' | 'brand' | 'price_retail' | 'stock_quantity' | 'is_active' | 'is_featured' | 'is_new' | 'category_id'>;
 
 export const metadata = { title: 'Admin — Products' };
 
@@ -14,7 +14,7 @@ export default async function AdminProductsPage() {
   const admin = createAdminClient();
   const { data: products } = await admin
     .from('products')
-    .select('id, name_en, brand, price_retail, stock_quantity, is_active, is_featured, category_id')
+    .select('id, name_en, brand, price_retail, stock_quantity, is_active, is_featured, is_new, category_id')
     .order('created_at', { ascending: false }) as { data: ProductRow[] | null; error: unknown };
 
   return (
@@ -39,7 +39,8 @@ export default async function AdminProductsPage() {
               <th className="px-4 py-3 text-end">Price</th>
               <th className="px-4 py-3 text-center">Stock</th>
               <th className="px-4 py-3 text-center">Active</th>
-              <th className="px-4 py-3 text-center">Featured</th>
+              <th className="px-4 py-3 text-center">New In</th>
+              <th className="px-4 py-3 text-center">Bestseller</th>
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
@@ -56,6 +57,9 @@ export default async function AdminProductsPage() {
                 </td>
                 <td className="px-4 py-3 text-center">
                   <span className={`inline-block h-2 w-2 rounded-full ${p.is_active ? 'bg-emerald-500' : 'bg-gray-300'}`} />
+                </td>
+                <td className="px-4 py-3 text-center">
+                  <span className={`inline-block h-2 w-2 rounded-full ${p.is_new ? 'bg-blue-500' : 'bg-gray-300'}`} />
                 </td>
                 <td className="px-4 py-3 text-center">
                   <span className={`inline-block h-2 w-2 rounded-full ${p.is_featured ? 'bg-pink-primary' : 'bg-gray-300'}`} />
@@ -75,7 +79,7 @@ export default async function AdminProductsPage() {
             ))}
             {!products?.length && (
               <tr>
-                <td colSpan={7} className="px-5 py-8 text-center text-sm text-gray-400">
+                <td colSpan={8} className="px-5 py-8 text-center text-sm text-gray-400">
                   No products yet. <Link href="/admin/products/new" className="text-pink-primary hover:underline">Add one →</Link>
                 </td>
               </tr>

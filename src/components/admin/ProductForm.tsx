@@ -31,6 +31,7 @@ const schema = z.object({
   stock_quantity:  z.number().int().min(0),
   is_active:       z.boolean(),
   is_featured:     z.boolean(),
+  is_new:          z.boolean(),
   specs_raw:       z.string().optional(),
 });
 
@@ -100,10 +101,12 @@ export default function ProductForm({ categories, product }: Props) {
       stock_quantity: product.stock_quantity,
       is_active:      product.is_active,
       is_featured:    product.is_featured,
+      is_new:         (product as Product & { is_new?: boolean }).is_new ?? false,
       specs_raw:      product.specs ? JSON.stringify(product.specs, null, 2) : '',
     } : {
       is_active: true,
       is_featured: false,
+      is_new: false,
       stock_quantity: 0,
     },
   });
@@ -200,6 +203,7 @@ export default function ProductForm({ categories, product }: Props) {
           : values.stock_quantity,
         is_active:      values.is_active,
         is_featured:    values.is_featured,
+        is_new:         values.is_new,
         images,
         specs,
         variants,
@@ -492,15 +496,22 @@ export default function ProductForm({ categories, product }: Props) {
       </div>
 
       {/* Flags */}
-      <div className="flex gap-6">
-        <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700">
-          <input {...register('is_active')} type="checkbox" className="h-4 w-4 rounded border-gray-300 text-pink-primary focus:ring-pink-primary/30" />
-          Active (visible in shop)
-        </label>
-        <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700">
-          <input {...register('is_featured')} type="checkbox" className="h-4 w-4 rounded border-gray-300 text-pink-primary focus:ring-pink-primary/30" />
-          Featured (shown on home)
-        </label>
+      <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Visibility</p>
+        <div className="flex flex-wrap gap-5">
+          <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700">
+            <input {...register('is_active')} type="checkbox" className="h-4 w-4 rounded border-gray-300 text-pink-primary focus:ring-pink-primary/30" />
+            <span>Active <span className="text-xs text-gray-400">(visible in shop)</span></span>
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700">
+            <input {...register('is_new')} type="checkbox" className="h-4 w-4 rounded border-gray-300 text-pink-primary focus:ring-pink-primary/30" />
+            <span>New In <span className="text-xs text-gray-400">(homepage "New In" section)</span></span>
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700">
+            <input {...register('is_featured')} type="checkbox" className="h-4 w-4 rounded border-gray-300 text-pink-primary focus:ring-pink-primary/30" />
+            <span>Bestseller <span className="text-xs text-gray-400">(homepage "Bestsellers" section)</span></span>
+          </label>
+        </div>
       </div>
 
       {/* Submit */}
