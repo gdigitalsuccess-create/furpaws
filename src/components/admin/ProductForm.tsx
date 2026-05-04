@@ -124,10 +124,10 @@ export default function ProductForm({ categories, product }: Props) {
       const [nameRes, descRes] = await Promise.all(requests);
       const nameData = await nameRes?.json() as { translated?: string; error?: string };
       if (nameData?.error) { setTranslateError(nameData.error); return; }
-      if (nameData?.translated) setValue('name_ar', nameData.translated);
+      if (nameData?.translated) setValue('name_ar', nameData.translated, { shouldValidate: true });
       if (descRes) {
         const descData = await descRes.json() as { translated?: string };
-        if (descData?.translated) setValue('description_ar', descData.translated);
+        if (descData?.translated) setValue('description_ar', descData.translated, { shouldValidate: true });
       }
     } catch {
       setTranslateError('Translation failed. Check your connection.');
