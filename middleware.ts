@@ -61,8 +61,8 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files (including subdirectory assets)
-    '/((?!_next|_vercel|.*\\.[^/]+$).*)',
+    // Skip Next.js internals, API routes and all static files
+    '/((?!_next|_vercel|api|.*\\.[^/]+$).*)',
     '/',
   ],
 };
