@@ -91,8 +91,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
   }
 }
-
-// Stripe requires the raw body — disable Next.js body parsing
-export const config = {
-  api: { bodyParser: false },
-};
