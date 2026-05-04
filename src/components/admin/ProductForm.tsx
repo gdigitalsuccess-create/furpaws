@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, Upload, X, Link as LinkIcon, Languages, Plus, Trash2 } from 'lucide-react';
 import type { Database } from '@/types/database';
+import BrandCombobox from './BrandCombobox';
 
 type Category = Database['public']['Tables']['categories']['Row'];
 type Product  = Database['public']['Tables']['products']['Row'];
@@ -44,6 +45,7 @@ const MAX_IMAGES = 5;
 
 interface Props {
   categories: CategoryWithParent[];
+  brands?: string[];
   product?: Product;
 }
 
@@ -58,7 +60,7 @@ function parseVariants(raw: unknown): ProductVariant[] {
   );
 }
 
-export default function ProductForm({ categories, product }: Props) {
+export default function ProductForm({ categories, brands = [], product }: Props) {
   const parents = categories.filter((c) => !c.parent_id);
   const children = (parentId: string) => categories.filter((c) => c.parent_id === parentId);
   const router = useRouter();
@@ -300,7 +302,11 @@ export default function ProductForm({ categories, product }: Props) {
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className={labelCls}>Brand</label>
-          <input {...register('brand')} placeholder="Royal Canin" className={inputCls} />
+          <BrandCombobox
+            value={watch('brand') ?? ''}
+            onChange={(val) => setValue('brand', val)}
+            brands={brands}
+          />
         </div>
         <div>
           <label className={labelCls}>Category</label>

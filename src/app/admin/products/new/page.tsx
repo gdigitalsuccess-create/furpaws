@@ -7,11 +7,14 @@ export const metadata = { title: 'Admin — New Product' };
 
 export default async function NewProductPage() {
   const admin = createAdminClient();
-  const { data: categories } = await admin
-    .from('categories')
-    .select('id, name_en, name_ar, slug, parent_id, sort_order')
-    .eq('is_active', true)
-    .order('sort_order');
+  const [categoriesRes, brandsRes] = await Promise.all([
+    admin.from('categories').select('id, name_en, name_ar, slug, parent_id, sort_order').eq('is_active', true).order('sort_order'),
+    admin.from('products').select('brand').not('brand', 'is', null),
+  ]);
+  const categories = categoriesRes.data;
+  const brands = [...new Set(
+    ((brandsRes.data ?? []) as { brand: string | null }[]).map((p) => p.brand).filter((b): b is string => b !== null)
+  )].sort();
 
   return (
     <div className="p-8">
@@ -21,7 +24,7 @@ export default async function NewProductPage() {
       </Link>
       <h1 className="mb-8 text-2xl font-bold text-gray-900">Add Product</h1>
       <div className="max-w-3xl rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
-        <ProductFormWrapper categories={categories ?? []} />
+        <ProductFormWrapper categories={categories ?? []} brands={brands} />
       </div>
     </div>
   );

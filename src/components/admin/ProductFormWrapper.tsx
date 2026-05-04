@@ -11,9 +11,10 @@ const ProductForm = dynamic(() => import('./ProductForm'), { ssr: false });
 
 interface Props {
   categories: CategoryWithParent[];
+  brands?: string[];
   product?: Product;
 }
 
-export default function ProductFormWrapper({ categories, product }: Props) {
-  return <ProductForm categories={categories} product={product} />;
+export default function ProductFormWrapper({ categories, brands = [], product }: Props) {
+  return <ProductForm categories={categories} brands={brands} product={product} />;
 }

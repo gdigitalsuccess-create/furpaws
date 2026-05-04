@@ -10,10 +10,16 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
   const { id } = await params;
   const admin = createAdminClient();
 
-  const [{ data: product }, { data: categories }] = await Promise.all([
+  const [productRes, categoriesRes, brandsRes] = await Promise.all([
     admin.from('products').select('*').eq('id', id).single(),
     admin.from('categories').select('id, name_en, name_ar, slug, parent_id, sort_order').eq('is_active', true).order('sort_order'),
+    admin.from('products').select('brand').not('brand', 'is', null),
   ]);
+  const product = productRes.data;
+  const categories = categoriesRes.data;
+  const brands = [...new Set(
+    ((brandsRes.data ?? []) as { brand: string | null }[]).map((p) => p.brand).filter((b): b is string => b !== null)
+  )].sort();
 
   if (!product) notFound();
 
@@ -25,7 +31,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
       </Link>
       <h1 className="mb-8 text-2xl font-bold text-gray-900">Edit Product</h1>
       <div className="max-w-3xl rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
-        <ProductFormWrapper categories={categories ?? []} product={product} />
+        <ProductFormWrapper categories={categories ?? []} brands={brands} product={product} />
       </div>
     </div>
   );
