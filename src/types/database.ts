@@ -100,6 +100,11 @@ export interface Database {
           message: string | null;
           status: 'pending' | 'approved' | 'rejected';
           admin_notes: string | null;
+          trade_license_number: string | null;
+          trade_license_doc_url: string | null;
+          trn_number: string | null;
+          emirates_id_number: string | null;
+          emirates_id_doc_url: string | null;
           created_at: string;
           updated_at: string;
         };
