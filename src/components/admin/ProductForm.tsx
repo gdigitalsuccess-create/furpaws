@@ -76,7 +76,9 @@ export default function ProductForm({ categories, brands = [], product }: Props)
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Variants
-  const [variants, setVariants] = useState<ProductVariant[]>(parseVariants(product?.variants));
+  const initialVariants = parseVariants(product?.variants);
+  const [hasVariants, setHasVariants] = useState(initialVariants.length > 0);
+  const [variants, setVariants] = useState<ProductVariant[]>(initialVariants);
   const [newVariant, setNewVariant] = useState<ProductVariant>({ name: '', price: 0, stock: 0 });
 
   const [translating, setTranslating] = useState(false);
@@ -289,7 +291,7 @@ export default function ProductForm({ categories, brands = [], product }: Props)
           <label className={labelCls}>B2B Price (AED)</label>
           <input {...register('price_b2b', { valueAsNumber: true })} type="number" step="0.01" min="0" placeholder="Optional" className={inputCls} />
         </div>
-        {variants.length === 0 && (
+        {!hasVariants && (
           <div>
             <label className={labelCls}>Stock Qty</label>
             <input {...register('stock_quantity', { valueAsNumber: true })} type="number" min="0" placeholder="0" className={inputCls} />
@@ -331,10 +333,21 @@ export default function ProductForm({ categories, brands = [], product }: Props)
       {/* ── VARIANTS ── */}
       <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-4">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-            Variants (size, weight…)
-          </span>
-          {variants.length > 0 && (
+          <label className="flex cursor-pointer items-center gap-2">
+            <input
+              type="checkbox"
+              checked={hasVariants}
+              onChange={(e) => {
+                setHasVariants(e.target.checked);
+                if (!e.target.checked) setVariants([]);
+              }}
+              className="h-4 w-4 rounded border-gray-300 text-pink-primary focus:ring-pink-primary/30"
+            />
+            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+              This product has variants (size, weight…)
+            </span>
+          </label>
+          {hasVariants && variants.length > 0 && (
             <span className="text-xs text-gray-400">
               Total stock: {variants.reduce((s, v) => s + v.stock, 0)} units
             </span>
@@ -342,7 +355,7 @@ export default function ProductForm({ categories, brands = [], product }: Props)
         </div>
 
         {/* Existing variants */}
-        {variants.length > 0 && (
+        {hasVariants && variants.length > 0 && (
           <div className="space-y-2">
             {/* Header */}
             <div className="grid grid-cols-[1fr_100px_80px_32px] gap-2 px-1">
@@ -383,53 +396,54 @@ export default function ProductForm({ categories, brands = [], product }: Props)
           </div>
         )}
 
-        {/* Add new variant row */}
-        <div className="grid grid-cols-[1fr_100px_80px_auto] gap-2 items-end">
-          <div>
-            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-gray-400">Name</label>
-            <input
-              value={newVariant.name}
-              onChange={(e) => setNewVariant((p) => ({ ...p, name: e.target.value }))}
-              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addVariant())}
-              placeholder="S / M / L / 400g / 1kg"
-              className={inputCls}
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-gray-400">Price</label>
-            <input
-              type="number" step="0.01" min="0"
-              value={newVariant.price || ''}
-              onChange={(e) => setNewVariant((p) => ({ ...p, price: parseFloat(e.target.value) || 0 }))}
-              placeholder="0.00"
-              className={inputCls}
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-gray-400">Stock</label>
-            <input
-              type="number" min="0"
-              value={newVariant.stock || ''}
-              onChange={(e) => setNewVariant((p) => ({ ...p, stock: parseInt(e.target.value) || 0 }))}
-              placeholder="0"
-              className={inputCls}
-            />
-          </div>
-          <button
-            type="button"
-            onClick={addVariant}
-            disabled={!newVariant.name.trim() || newVariant.price <= 0}
-            className="flex h-10 items-center gap-1.5 rounded-lg bg-pink-primary px-3 text-sm font-semibold text-white hover:bg-pink-accent disabled:opacity-40 transition-colors"
-          >
-            <Plus className="h-4 w-4" />
-            Add
-          </button>
-        </div>
-
-        {variants.length === 0 && (
-          <p className="text-xs text-gray-400">
-            No variants — product has a single price &amp; stock (fields above).
-          </p>
+        {/* Add new variant row — only when toggle is ON */}
+        {hasVariants && (
+          <>
+            <div className="grid grid-cols-[1fr_100px_80px_auto] gap-2 items-end">
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-gray-400">Name</label>
+                <input
+                  value={newVariant.name}
+                  onChange={(e) => setNewVariant((p) => ({ ...p, name: e.target.value }))}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addVariant())}
+                  placeholder="S / M / L / 400g / 1kg"
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-gray-400">Price</label>
+                <input
+                  type="number" step="0.01" min="0"
+                  value={newVariant.price || ''}
+                  onChange={(e) => setNewVariant((p) => ({ ...p, price: parseFloat(e.target.value) || 0 }))}
+                  placeholder="0.00"
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-gray-400">Stock</label>
+                <input
+                  type="number" min="0"
+                  value={newVariant.stock || ''}
+                  onChange={(e) => setNewVariant((p) => ({ ...p, stock: parseInt(e.target.value) || 0 }))}
+                  placeholder="0"
+                  className={inputCls}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={addVariant}
+                disabled={!newVariant.name.trim() || newVariant.price <= 0}
+                className="flex h-10 items-center gap-1.5 rounded-lg bg-pink-primary px-3 text-sm font-semibold text-white hover:bg-pink-accent disabled:opacity-40 transition-colors"
+              >
+                <Plus className="h-4 w-4" />
+                Add
+              </button>
+            </div>
+            {variants.length === 0 && (
+              <p className="text-xs text-gray-400">Add at least one variant (name + price + stock).</p>
+            )}
+          </>
         )}
       </div>
 
