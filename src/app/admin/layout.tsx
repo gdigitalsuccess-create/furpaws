@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { redirect } from 'next/navigation';
 import { LayoutDashboard, Package, ShoppingCart, Users, Star, Tag, LogOut } from 'lucide-react';
+import { assertAdmin } from '@/lib/assertAdmin';
 
 const NAV = [
   { href: '/admin',          icon: LayoutDashboard, label: 'Dashboard' },
@@ -11,7 +13,10 @@ const NAV = [
   { href: '/admin/promos',   icon: Tag,              label: 'Promo Codes' },
 ];
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  if (!await assertAdmin()) {
+    redirect('/en/account/login');
+  }
   return (
     <div className="flex min-h-screen bg-gray-50">
 
