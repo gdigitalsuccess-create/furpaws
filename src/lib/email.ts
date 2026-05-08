@@ -6,6 +6,41 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws.ae';
 const PINK = '#e91e8c';
 const PINK_LIGHT = '#fff0f7';
 
+export async function sendContactEmail(data: {
+  name: string;
+  email: string;
+  subject?: string;
+  message: string;
+}) {
+  const adminEmail = process.env.ADMIN_EMAIL ?? FROM;
+  const { name, email, subject, message } = data;
+
+  const body = `
+    <div style="background:${PINK};border-radius:12px 12px 0 0;padding:28px;text-align:center">
+      <h1 style="margin:0;color:#fff;font-size:22px">📩 New Contact Message</h1>
+    </div>
+    <div style="background:#fff;border:1px solid #f0f0f0;border-top:none;border-radius:0 0 12px 12px;padding:28px;margin-bottom:24px">
+      <table style="width:100%;font-size:14px;border-collapse:collapse;margin-bottom:20px">
+        <tr><td style="padding:6px 0;color:#888;width:25%">From</td><td style="padding:6px 0;font-weight:600;color:#333">${name}</td></tr>
+        <tr><td style="padding:6px 0;color:#888">Email</td><td style="padding:6px 0"><a href="mailto:${email}" style="color:${PINK}">${email}</a></td></tr>
+        ${subject ? `<tr><td style="padding:6px 0;color:#888">Subject</td><td style="padding:6px 0;font-weight:600;color:#333">${subject}</td></tr>` : ''}
+      </table>
+      <div style="background:#f9f9f9;border-left:4px solid ${PINK};border-radius:4px;padding:16px;color:#444;font-size:14px;line-height:1.7;white-space:pre-line">${message}</div>
+    </div>
+    <p style="color:#bbb;font-size:12px;text-align:center;margin:0">FURPAWS · Sharjah, UAE</p>
+  `;
+
+  const { error } = await resend.emails.send({
+    from: FROM,
+    to: adminEmail,
+    replyTo: email,
+    subject: `📩 Contact: ${subject || name} — FURPAWS`,
+    html: buildWrapper(body),
+  });
+
+  if (error) { console.error('[email] Contact failed:', error); throw new Error(JSON.stringify(error)); }
+}
+
 export async function sendBackInStockEmail(customerEmail: string, productName: string, productUrl: string) {
   const html = buildWrapper(`
     <div style="background:${PINK_LIGHT};border-radius:8px;padding:24px;margin-bottom:24px;border:1px solid #f9c0dd">

@@ -14,14 +14,26 @@ export default function ContactPage() {
 function ContactEn() {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setSent(true);
-    setLoading(false);
+    setError('');
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error();
+      setSent(true);
+    } catch {
+      setError('Something went wrong. Please try again or email us directly.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -139,6 +151,7 @@ function ContactEn() {
                     className="w-full rounded-xl border border-fur-border px-4 py-3 text-sm text-text-dark placeholder:text-text-muted focus:border-pink-primary focus:outline-none focus:ring-2 focus:ring-pink-primary/20 resize-none"
                   />
                 </div>
+                {error && <p className="text-sm text-red-500">{error}</p>}
                 <button
                   type="submit"
                   disabled={loading}
@@ -165,14 +178,26 @@ function ContactEn() {
 function ContactAr() {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setSent(true);
-    setLoading(false);
+    setError('');
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error();
+      setSent(true);
+    } catch {
+      setError('حدث خطأ ما. يرجى المحاولة مرة أخرى أو مراسلتنا مباشرةً.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -290,6 +315,7 @@ function ContactAr() {
                     className="w-full rounded-xl border border-fur-border px-4 py-3 text-sm text-text-dark placeholder:text-text-muted focus:border-pink-primary focus:outline-none focus:ring-2 focus:ring-pink-primary/20 resize-none"
                   />
                 </div>
+                {error && <p className="text-sm text-red-500">{error}</p>}
                 <button
                   type="submit"
                   disabled={loading}
