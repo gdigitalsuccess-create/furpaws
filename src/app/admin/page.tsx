@@ -1,9 +1,11 @@
 export const dynamic = 'force-dynamic';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
 import { ShoppingCart, DollarSign, Clock, AlertTriangle, TrendingUp, Package } from 'lucide-react';
 import Link from 'next/link';
 import { formatPrice } from '@/lib/pricing';
 import RevenueChart from '@/components/admin/RevenueChart';
+import AdminHero from '@/components/admin/AdminHero';
 import type { Order, B2BApplication } from '@/types/database';
 
 type RecentOrder     = Pick<Order, 'id' | 'status' | 'total_amount' | 'created_at' | 'shipping_address'>;
@@ -16,6 +18,17 @@ export const metadata = { title: 'Admin Dashboard' };
 
 export default async function AdminDashboardPage() {
   const admin = createAdminClient();
+
+  // Fetch connected admin's name
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const adminName = user ? await admin
+    .from('profiles')
+    .select('full_name')
+    .eq('id', user.id)
+    .maybeSingle()
+    .then(({ data }) => (data as { full_name: string | null } | null)?.full_name ?? null)
+    : null;
 
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -106,7 +119,12 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="p-8">
-      <h1 className="mb-8 text-2xl font-bold text-gray-900">Dashboard</h1>
+      <AdminHero
+        name={adminName}
+        totalOrders={totalOrders ?? 0}
+        totalRevenue={totalRevenue}
+        pendingOrders={pendingOrders ?? 0}
+      />
 
       {/* KPI Stats */}
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
