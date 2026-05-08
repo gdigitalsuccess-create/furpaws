@@ -14,9 +14,13 @@ const NAV = [
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  if (!await assertAdmin()) {
-    redirect('/en/account/login');
+  let isAdmin = false;
+  try {
+    isAdmin = await assertAdmin();
+  } catch {
+    // treat any error as unauthenticated
   }
+  if (!isAdmin) redirect('/en/account/login');
   return (
     <div className="flex min-h-screen bg-gray-50">
 

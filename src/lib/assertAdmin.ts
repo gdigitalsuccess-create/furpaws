@@ -11,7 +11,7 @@ export async function assertAdmin(): Promise<boolean> {
     .from('profiles')
     .select('role')
     .eq('id', user.id)
-    .single() as { data: { role: string } | null };
+    .maybeSingle() as { data: { role: string } | null };
 
   return data?.role === 'admin';
 }
