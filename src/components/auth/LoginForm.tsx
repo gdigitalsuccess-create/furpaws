@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/client';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import LogoutButton from './LogoutButton';
 
 const schema = z.object({
   email: z.string().email(),
@@ -123,6 +124,24 @@ export default function LoginForm() {
           {t('sign_up')}
         </Link>
       </p>
+
+      {/* Divider */}
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-fur-border" />
+        </div>
+        <div className="relative flex justify-center text-xs">
+          <span className="bg-white px-2 text-text-muted">
+            {locale === 'ar' ? 'أو' : 'ou'}
+          </span>
+        </div>
+      </div>
+
+      {/* Logout current session */}
+      <LogoutButton
+        className="flex w-full items-center justify-center gap-2 rounded-xl border border-fur-border py-3 text-sm font-medium text-text-muted transition-colors hover:border-red-300 hover:text-red-500"
+        label={locale === 'ar' ? 'تسجيل الخروج من الحساب الحالي' : 'Se déconnecter du compte actuel'}
+      />
     </form>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { useForm } from 'react-hook-form';
@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { toast } from 'sonner';
 import { useCartStore } from '@/store/cartStore';
-import { formatPrice, calculateOrderTotal } from '@/lib/pricing';
+import { formatPrice, calculateOrderTotal, SHIPPING_BY_EMIRATE, SHIPPING_FREE_THRESHOLD } from '@/lib/pricing';
 import { Loader2 } from 'lucide-react';
 import type { CartItem } from '@/store/cartStore';
 
@@ -32,6 +32,9 @@ type FormValues = z.infer<typeof schema>;
 interface CheckoutFormProps {
   items: CartItem[];
   subtotal: number;
+  finalTotal?: number;
+  discount?: number;
+  onEmirateChange?: (emirate: string) => void;
 }
 
 const inputCls =
@@ -39,7 +42,7 @@ const inputCls =
 const errorCls = 'mt-1 text-xs text-red-500';
 const labelCls = 'mb-1.5 block text-sm font-medium text-text-dark';
 
-export default function CheckoutForm({ items, subtotal }: CheckoutFormProps) {
+export default function CheckoutForm({ items, subtotal, finalTotal, discount, onEmirateChange }: CheckoutFormProps) {
   const locale = useLocale();
   const t = useTranslations('checkout');
   const router = useRouter();
@@ -49,13 +52,21 @@ export default function CheckoutForm({ items, subtotal }: CheckoutFormProps) {
   const [processing, setProcessing] = useState(false);
   const [paymentReady, setPaymentReady] = useState(false);
 
-  const { total } = calculateOrderTotal(subtotal);
+  const { total: baseTotal } = calculateOrderTotal(subtotal);
+  const total = finalTotal ?? baseTotal;
 
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
+
+  const selectedEmirate = watch('emirate');
+  useEffect(() => {
+    if (selectedEmirate) onEmirateChange?.(selectedEmirate);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedEmirate]);
 
   async function onSubmit(data: FormValues) {
     if (!stripe || !elements) return;
@@ -89,6 +100,8 @@ export default function CheckoutForm({ items, subtotal }: CheckoutFormProps) {
           shippingAddress: data,
           items,
           customerEmail: data.email,
+          customerName: data.full_name,
+          discount,
         }),
       });
 
@@ -152,9 +165,12 @@ export default function CheckoutForm({ items, subtotal }: CheckoutFormProps) {
             <label className={labelCls}>{t('emirate')}</label>
             <select {...register('emirate')} className={inputCls}>
               <option value="">{locale === 'ar' ? 'اختر الإمارة' : 'Select emirate'}</option>
-              {UAE_EMIRATES.map((e) => (
-                <option key={e} value={e}>{e}</option>
-              ))}
+              {UAE_EMIRATES.map((e) => {
+                const rate = SHIPPING_BY_EMIRATE[e];
+                const isFree = subtotal >= SHIPPING_FREE_THRESHOLD;
+                const label = isFree ? `${e} — Free` : `${e} — ${rate} AED`;
+                return <option key={e} value={e}>{label}</option>;
+              })}
             </select>
             {errors.emirate && <p className={errorCls}>{errors.emirate.message}</p>}
           </div>

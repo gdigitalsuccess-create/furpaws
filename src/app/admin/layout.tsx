@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { LayoutDashboard, Package, ShoppingCart, Users, Star, LogOut } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Users, Star, Tag, LogOut } from 'lucide-react';
 
 const NAV = [
   { href: '/admin',          icon: LayoutDashboard, label: 'Dashboard' },
@@ -8,6 +8,7 @@ const NAV = [
   { href: '/admin/orders',   icon: ShoppingCart,     label: 'Orders' },
   { href: '/admin/b2b',      icon: Users,            label: 'B2B Requests' },
   { href: '/admin/reviews',  icon: Star,             label: 'Reviews' },
+  { href: '/admin/promos',   icon: Tag,              label: 'Promo Codes' },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

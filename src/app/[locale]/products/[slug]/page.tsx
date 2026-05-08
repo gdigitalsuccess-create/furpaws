@@ -5,11 +5,17 @@ import { ChevronRight, Tag } from 'lucide-react';
 import { fetchProductBySlug } from '@/lib/supabase/products';
 import { fetchProductReviews } from '@/lib/supabase/reviews';
 import { createClient } from '@/lib/supabase/server';
+import { getDisplayPrice } from '@/lib/pricing';
+import type { UserRole } from '@/types/database';
 import ProductGallery from '@/components/product/ProductGallery';
 import ProductBuySection from '@/components/product/ProductBuySection';
+import ShareButtons from '@/components/product/ShareButtons';
+import BackInStockForm from '@/components/product/BackInStockForm';
+import RecentlyViewedSection from '@/components/product/RecentlyViewedSection';
+import ProductTabs from '@/components/product/ProductTabs';
 import type { Variant } from '@/components/product/ProductBuySection';
 import SimilarProducts from '@/components/product/SimilarProducts';
-import ReviewsSection from '@/components/product/ReviewsSection';
+import FrequentlyBoughtTogether from '@/components/product/FrequentlyBoughtTogether';
 import type { Metadata } from 'next';
 import type { Json } from '@/types/database';
 
@@ -28,16 +34,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const description = (isAr ? product.description_ar : product.description_en)
     ?? `Buy ${product.name_en} at FURPAWS — Premium Pet Accessories UAE`;
 
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws.ae';
   return {
     title: name,
     description,
-    alternates: { canonical: `https://furpaws.ae/${locale}/products/${slug}` },
+    alternates: { canonical: `${base}/${locale}/products/${slug}` },
     openGraph: {
       title: `${name} | FURPAWS`,
       description,
-      url: `https://furpaws.ae/${locale}/products/${slug}`,
+      url: `${base}/${locale}/products/${slug}`,
       type: 'website',
-      images: images.length > 0 ? [{ url: images[0], alt: name }] : [],
+      locale: isAr ? 'ar_AE' : 'en_AE',
+      images: images.length > 0 ? [{ url: images[0], width: 800, height: 800, alt: name ?? undefined }] : [],
     },
     twitter: {
       card: 'summary_large_image',
@@ -80,6 +88,17 @@ export default async function ProductPage({ params }: PageProps) {
 
   if (!product) notFound();
 
+  let userRole: UserRole = 'guest';
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single() as { data: { role: UserRole } | null };
+    userRole = profile?.role ?? 'customer';
+  }
+  const basePrice = getDisplayPrice(product.price_retail, product.price_b2b, userRole);
+
   const reviews = await fetchProductReviews(product.id);
   const name = locale === 'ar' ? product.name_ar : product.name_en;
   const description = locale === 'ar' ? product.description_ar : product.description_en;
@@ -87,6 +106,11 @@ export default async function ProductPage({ params }: PageProps) {
   const specs = getSpecs(product.specs);
   const variants = getVariants(product.variants);
   const inStock = product.stock_quantity > 0;
+
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws.ae';
+  const avgRating = reviews.length > 0
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+    : null;
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -101,9 +125,19 @@ export default async function ProductPage({ params }: PageProps) {
       price: product.price_retail,
       priceCurrency: 'AED',
       availability: inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-      url: `https://furpaws.ae/en/products/${product.slug}`,
+      url: `${base}/en/products/${product.slug}`,
       seller: { '@type': 'Organization', name: 'FURPAWS' },
+      itemCondition: 'https://schema.org/NewCondition',
     },
+    ...(avgRating !== null && {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: avgRating.toFixed(1),
+        reviewCount: reviews.length,
+        bestRating: 5,
+        worstRating: 1,
+      },
+    }),
   };
 
   return (
@@ -153,55 +187,62 @@ export default async function ProductPage({ params }: PageProps) {
 
           <div className="my-1 h-px bg-fur-border" />
 
+          {/* B2B wholesale badge */}
+          {(userRole === 'b2b' || userRole === 'admin') && product.price_b2b !== null && (
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+              ✓ {locale === 'ar' ? 'سعر الجملة مُفعَّل' : 'Wholesale Price Active'}
+            </div>
+          )}
+
           {/* Price + Variants + Add to cart */}
           <ProductBuySection
             productId={product.id}
             nameEn={product.name_en}
             nameAr={product.name_ar}
             slug={product.slug}
-            basePrice={product.price_retail}
+            basePrice={basePrice}
             baseStock={product.stock_quantity}
             firstImage={images[0] ?? ''}
             variants={variants}
+            sizeLabel={
+              specs
+                ? (specs['Size'] ?? specs['size'] ?? specs['Weight'] ?? specs['weight'] ?? specs['Taille'] ?? specs['Poids'] ?? null)
+                : null
+            }
           />
+
+          {/* Back in stock */}
+          {!inStock && (
+            <BackInStockForm productId={product.id} locale={locale} />
+          )}
 
           <div className="my-1 h-px bg-fur-border" />
 
-          {/* Description */}
-          {description && (
-            <div>
-              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-text-muted">
-                {t('description')}
-              </h2>
-              <p className="text-sm leading-relaxed text-text-dark whitespace-pre-line">
-                {description}
-              </p>
-            </div>
-          )}
-
-          {/* Specifications */}
-          {specs && Object.keys(specs).length > 0 && (
-            <div>
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-text-muted">
-                {t('specifications')}
-              </h2>
-              <table className="w-full text-sm">
-                <tbody>
-                  {Object.entries(specs).map(([key, val]) => (
-                    <tr key={key} className="border-b border-fur-border last:border-0">
-                      <td className="py-2 pr-4 font-medium text-text-muted w-1/3">{key}</td>
-                      <td className="py-2 text-text-dark">{String(val)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          {/* Share */}
+          <ShareButtons
+            name={name}
+            url={`https://furpaws.vercel.app/${locale}/products/${product.slug}`}
+            locale={locale}
+          />
         </div>
       </div>
 
-      {/* Reviews */}
-      <ReviewsSection
+      {/* Frequently Bought Together */}
+      {inStock && (
+        <div className="mt-10">
+          <FrequentlyBoughtTogether
+            categoryId={product.category_id}
+            currentProduct={product}
+            locale={locale}
+            userRole={userRole}
+          />
+        </div>
+      )}
+
+      {/* Tabs: Description / Specifications / Reviews */}
+      <ProductTabs
+        description={description ?? null}
+        specs={specs}
         reviews={reviews}
         productId={product.id}
         isLoggedIn={!!user}
@@ -209,7 +250,23 @@ export default async function ProductPage({ params }: PageProps) {
       />
 
       {/* Similar products */}
-      <SimilarProducts categoryId={product.category_id} excludeSlug={slug} locale={locale} />
+      <SimilarProducts categoryId={product.category_id} excludeSlug={slug} locale={locale} userRole={userRole} />
+
+      {/* Recently viewed */}
+      <RecentlyViewedSection
+        current={{
+          id: product.id,
+          name_en: product.name_en,
+          name_ar: product.name_ar,
+          slug: product.slug,
+          price_retail: product.price_retail,
+          price_b2b: product.price_b2b,
+          images: images,
+          brand: product.brand ?? null,
+          stock_quantity: product.stock_quantity,
+        }}
+        userRole={userRole}
+      />
     </div>
     </>
   );

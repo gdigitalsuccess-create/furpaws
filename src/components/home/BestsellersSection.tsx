@@ -4,12 +4,30 @@ import { ArrowRight } from 'lucide-react';
 import ProductCard from './ProductCard';
 import { fetchProducts } from '@/lib/supabase/products';
 import { fetchRatingsMap } from '@/lib/supabase/reviews';
+import { createClient } from '@/lib/supabase/server';
+import { getDisplayPrice } from '@/lib/pricing';
+import type { UserRole } from '@/types/database';
 
 export default async function BestsellersSection({ locale }: { locale: string }) {
   const t = await getTranslations({ locale, namespace: 'home' });
   const { products } = await fetchProducts({ sort: 'featured', page: 1 });
   const displayed = products.slice(0, 4);
-  const ratings = await fetchRatingsMap(displayed.map((p) => p.id));
+
+  const [ratings, supabase] = await Promise.all([
+    fetchRatingsMap(displayed.map((p) => p.id)),
+    createClient(),
+  ]);
+
+  const { data: { user } } = await supabase.auth.getUser();
+  let userRole: UserRole = 'guest';
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single() as { data: { role: UserRole } | null };
+    userRole = profile?.role ?? 'customer';
+  }
 
   return (
     <section className="bg-off-white py-16">
@@ -32,6 +50,7 @@ export default async function BestsellersSection({ locale }: { locale: string })
                 product={product}
                 rating={ratings[product.id]?.avg ?? 0}
                 reviewCount={ratings[product.id]?.count ?? 0}
+                displayPrice={getDisplayPrice(product.price_retail, product.price_b2b, userRole)}
               />
             ))}
           </div>

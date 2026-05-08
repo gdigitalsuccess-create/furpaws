@@ -3,6 +3,7 @@ import B2BActionButtons from '@/components/admin/B2BActionButtons';
 import type { B2BApplication } from '@/types/database';
 import { FileText, CreditCard, Receipt } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Admin — B2B Requests' };
 
 const STATUS_STYLE: Record<string, string> = {

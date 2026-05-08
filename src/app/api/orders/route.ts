@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { fetchPriceMap, checkStock, decrementStock } from '@/lib/supabase/products';
 import { calculateShipping } from '@/lib/pricing';
-import { sendOrderConfirmationEmail } from '@/lib/email';
+import { sendOrderConfirmationEmail, sendAdminOrderNotification } from '@/lib/email';
 import type { CartItem } from '@/store/cartStore';
 import type { Database } from '@/types/database';
 
@@ -16,11 +17,13 @@ interface OrderPayload {
   shippingAddress: Record<string, string>;
   items: CartItem[];
   customerEmail?: string;
+  customerName?: string;
+  discount?: number;
 }
 
 export async function POST(request: Request) {
   try {
-    const { paymentIntentId, shippingAddress, items, customerEmail } =
+    const { paymentIntentId, shippingAddress, items, customerEmail, customerName, discount } =
       (await request.json()) as OrderPayload;
 
     // Verify payment status with Stripe before creating order
@@ -29,11 +32,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Payment not confirmed' }, { status: 400 });
     }
 
-    const itemsSubtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
-    const shippingAmount = calculateShipping(itemsSubtotal);
-    const totalAmount = paymentIntent.amount / 100;
-
     const supabase = createAdminClient();
+
+    // Block duplicate orders for the same PaymentIntent
+    const { data: existing } = await supabase
+      .from('orders')
+      .select('id')
+      .eq('stripe_payment_intent_id', paymentIntentId)
+      .maybeSingle() as { data: { id: string } | null };
+
+    if (existing) {
+      return NextResponse.json({ orderId: existing.id }); // idempotent — return existing order
+    }
+
+    // Fetch real prices from DB — never trust client-provided prices
+    const priceMap = await fetchPriceMap(items.map((i) => i.id));
+    const itemsSubtotal = items.reduce((s, i) => s + (priceMap[i.id] ?? 0) * i.quantity, 0);
+
+    // Verify stock availability before creating order
+    const stockError = await checkStock(items.map((i) => ({ id: i.id, quantity: i.quantity })));
+    if (stockError) return NextResponse.json({ error: stockError }, { status: 409 });
+    const shippingAmount = calculateShipping(itemsSubtotal, shippingAddress.emirate);
+    const totalAmount = paymentIntent.amount / 100; // authoritative: what Stripe actually charged
 
     const orderInsert: OrderInsert = {
       user_id: null,
@@ -63,30 +83,39 @@ export async function POST(request: Request) {
       product_name: item.name_en,
       product_image: item.image || null,
       quantity: item.quantity,
-      unit_price: item.price,
-      subtotal: item.price * item.quantity,
+      unit_price: priceMap[item.id] ?? 0,
+      subtotal: (priceMap[item.id] ?? 0) * item.quantity,
     }));
 
     // Create order items
     await supabase.from('order_items').insert(orderItems as never);
 
-    // Send confirmation email (non-blocking)
+    // Decrement stock asynchronously after confirmed order
+    decrementStock(items.map((i) => ({ id: i.id, quantity: i.quantity }))).catch(() => {});
+
+    // Send emails (non-blocking)
+    const emailItems = items.map((item) => ({
+      name: item.name_en,
+      quantity: item.quantity,
+      unitPrice: item.price,
+      subtotal: item.price * item.quantity,
+      image: item.image || undefined,
+    }));
+    const emailPayload = {
+      orderId: order.id,
+      customerEmail: customerEmail ?? '',
+      customerName,
+      items: emailItems,
+      subtotal: itemsSubtotal,
+      shippingAmount,
+      discount,
+      totalAmount,
+      shippingAddress,
+    };
     if (customerEmail) {
-      sendOrderConfirmationEmail({
-        orderId: order.id,
-        customerEmail,
-        items: items.map((item) => ({
-          name: item.name_en,
-          quantity: item.quantity,
-          unitPrice: item.price,
-          subtotal: item.price * item.quantity,
-        })),
-        subtotal: itemsSubtotal,
-        shippingAmount,
-        totalAmount,
-        shippingAddress,
-      }).catch(() => {});
+      sendOrderConfirmationEmail(emailPayload).catch(() => {});
     }
+    sendAdminOrderNotification(emailPayload).catch(() => {});
 
     return NextResponse.json({ orderId: order.id });
   } catch (err) {

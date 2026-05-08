@@ -6,22 +6,24 @@ import { notFound } from 'next/navigation';
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const isAr = locale === 'ar';
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws.ae';
   return {
     title: isAr ? 'فيرباوز — مستلزمات الحيوانات الأليفة في الإمارات' : 'FURPAWS — Premium Pet Accessories UAE',
     description: isAr
       ? 'تسوق أفضل مستلزمات الحيوانات الأليفة في الشارقة والإمارات. منتجات فاخرة للكلاب والقطط والحيوانات الصغيرة.'
       : 'Shop premium pet accessories in Sharjah & UAE. Quality products for dogs, cats and small animals with free shipping over 250 AED.',
     alternates: {
-      canonical: `https://furpaws.ae/${locale}`,
-      languages: { en: 'https://furpaws.ae/en', ar: 'https://furpaws.ae/ar' },
+      canonical: `${base}/${locale}`,
+      languages: { en: `${base}/en`, ar: `${base}/ar` },
     },
     openGraph: {
       title: isAr ? 'فيرباوز — مستلزمات الحيوانات الأليفة' : 'FURPAWS — Pet Accessories UAE',
       description: isAr
         ? 'منتجات فاخرة للحيوانات الأليفة في الإمارات'
         : 'Premium pet accessories in Sharjah & UAE',
-      url: `https://furpaws.ae/${locale}`,
+      url: `${base}/${locale}`,
       locale: isAr ? 'ar_AE' : 'en_AE',
+      images: [{ url: '/hero.jpg', width: 1200, height: 630, alt: 'FURPAWS' }],
     },
   };
 }
@@ -48,8 +50,33 @@ export default async function HomePage({ params }: PageProps) {
 
   setRequestLocale(locale);
 
+  const siteBase = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws.ae';
+  const orgJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'FURPAWS',
+    url: siteBase,
+    logo: `${siteBase}/logo.png`,
+    description: 'Premium pet accessories distributor in Sharjah, UAE.',
+    address: { '@type': 'PostalAddress', addressCountry: 'AE', addressLocality: 'Sharjah' },
+    sameAs: ['https://www.instagram.com/furpaws_ae'],
+  };
+  const websiteJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'FURPAWS',
+    url: siteBase,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: { '@type': 'EntryPoint', urlTemplate: `${siteBase}/en/shop?q={search_term_string}` },
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
       <HeroSection />
       <CategoriesSection locale={locale} />
       <NewArrivalsSection locale={locale} />

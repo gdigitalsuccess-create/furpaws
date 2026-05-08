@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Geist } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 
 const geistSans = Geist({
@@ -14,17 +15,17 @@ export const metadata: Metadata = {
   },
   description: 'Premium pet accessories distributor in Sharjah, UAE. Shop for dogs, cats and small animals.',
   keywords: ['pet accessories UAE', 'pet shop Sharjah', 'dog food UAE', 'cat accessories', 'pet supplies Dubai', 'furpaws'],
-  metadataBase: new URL('https://furpaws.ae'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws.ae'),
   openGraph: {
     siteName: 'FURPAWS',
     locale: 'en_AE',
     type: 'website',
-    images: [{ url: '/logo.png', width: 512, height: 512, alt: 'FURPAWS' }],
+    images: [{ url: '/hero.jpg', width: 1200, height: 630, alt: 'FURPAWS — Pet Accessories UAE' }],
   },
   twitter: {
     card: 'summary_large_image',
     site: '@furpaws_ae',
-    images: ['/logo.png'],
+    images: ['/hero.jpg'],
   },
   robots: {
     index: true,
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html suppressHydrationWarning className={`${geistSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}
+        <Analytics />
       </body>
     </html>
   );

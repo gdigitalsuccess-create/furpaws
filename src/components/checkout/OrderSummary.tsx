@@ -3,15 +3,24 @@
 import { useLocale } from 'next-intl';
 import { formatPrice, calculateOrderTotal, SHIPPING_FREE_THRESHOLD } from '@/lib/pricing';
 import type { CartItem } from '@/store/cartStore';
+import PromoCodeInput from './PromoCodeInput';
+import type { PromoDiscount } from './PromoCodeInput';
 
 interface OrderSummaryProps {
   items: CartItem[];
   subtotal: number;
+  shippingAmount?: number;
+  discount?: number;
+  promo?: PromoDiscount | null;
+  onPromoApply?: (d: PromoDiscount) => void;
+  onPromoRemove?: () => void;
 }
 
-export default function OrderSummary({ items, subtotal }: OrderSummaryProps) {
+export default function OrderSummary({ items, subtotal, shippingAmount, discount = 0, promo, onPromoApply, onPromoRemove }: OrderSummaryProps) {
   const locale = useLocale();
-  const { shipping, total } = calculateOrderTotal(subtotal);
+  const { shipping: defaultShipping, total } = calculateOrderTotal(subtotal);
+  const shipping = shippingAmount ?? defaultShipping;
+  const finalTotal = Math.max(0, subtotal + shipping - discount);
   const isFree = shipping === 0;
 
   return (
@@ -72,11 +81,29 @@ export default function OrderSummary({ items, subtotal }: OrderSummaryProps) {
           </p>
         )}
 
+        {discount > 0 && promo && (
+          <div className="flex justify-between text-emerald-600">
+            <span>{locale === 'ar' ? 'خصم' : 'Discount'} ({promo.code})</span>
+            <span className="font-semibold">− {formatPrice(discount, locale)}</span>
+          </div>
+        )}
+
         <div className="flex justify-between border-t border-fur-border pt-3 text-base">
           <span className="font-bold text-text-dark">{locale === 'ar' ? 'الإجمالي' : 'Total'}</span>
-          <span className="font-extrabold text-pink-primary">{formatPrice(total, locale)}</span>
+          <span className="font-extrabold text-pink-primary">{formatPrice(finalTotal, locale)}</span>
         </div>
       </div>
+
+      {/* Promo code */}
+      {onPromoApply && onPromoRemove && (
+        <div className="mt-4 border-t border-fur-border pt-4">
+          <PromoCodeInput
+            applied={promo ?? null}
+            onApply={onPromoApply}
+            onRemove={onPromoRemove}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useCartStore } from '@/store/cartStore';
-import { ShoppingBag, Star } from 'lucide-react';
+import { useWishlistStore } from '@/store/wishlistStore';
+import { ShoppingBag, Star, Heart } from 'lucide-react';
 import { formatPrice } from '@/lib/pricing';
 import type { Product } from '@/types/database';
 
@@ -16,12 +17,15 @@ type ProductCardProps = {
   rating?: number;
   reviewCount?: number;
   isNew?: boolean;
+  displayPrice?: number;
 };
 
-export default function ProductCard({ product, rating = 0, reviewCount = 0, isNew = false }: ProductCardProps) {
+export default function ProductCard({ product, rating = 0, reviewCount = 0, isNew = false, displayPrice }: ProductCardProps) {
   const locale = useLocale();
   const t = useTranslations('product');
   const addItem = useCartStore((s) => s.addItem);
+  const toggleWishlist = useWishlistStore((s) => s.toggle);
+  const isWished = useWishlistStore((s) => s.has(product.id));
   const [imgError, setImgError] = useState(false);
 
   const name = locale === 'ar' ? product.name_ar : product.name_en;
@@ -29,6 +33,22 @@ export default function ProductCard({ product, rating = 0, reviewCount = 0, isNe
   const firstImage = images[0] && images[0] !== '' ? images[0] : null;
   const showImage = firstImage && !imgError;
   const inStock = product.stock_quantity > 0;
+  const price = displayPrice ?? product.price_retail;
+  const isB2BPrice = displayPrice !== undefined && displayPrice < product.price_retail;
+
+  function handleWishlist(e: React.MouseEvent) {
+    e.preventDefault();
+    toggleWishlist({
+      id: product.id,
+      name_en: product.name_en,
+      name_ar: product.name_ar,
+      slug: product.slug,
+      price_retail: product.price_retail,
+      images: Array.isArray(product.images) ? (product.images as string[]) : [],
+      brand: product.brand ?? null,
+      stock_quantity: product.stock_quantity,
+    });
+  }
 
   function handleAddToCart(e: React.MouseEvent) {
     e.preventDefault();
@@ -37,7 +57,7 @@ export default function ProductCard({ product, rating = 0, reviewCount = 0, isNe
       id: product.id,
       name_en: product.name_en,
       name_ar: product.name_ar,
-      price: product.price_retail,
+      price,
       image: firstImage ?? '',
       slug: product.slug,
       stock_quantity: product.stock_quantity,
@@ -75,17 +95,18 @@ export default function ProductCard({ product, rating = 0, reviewCount = 0, isNe
           </div>
         )}
 
-        {product.brand && !isNew && (
-          <span className="absolute start-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-text-muted backdrop-blur-sm">
-            {product.brand}
-          </span>
-        )}
-
-        {product.brand && isNew && (
-          <span className="absolute end-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-text-muted backdrop-blur-sm">
-            {product.brand}
-          </span>
-        )}
+        {/* Wishlist button */}
+        <button
+          onClick={handleWishlist}
+          aria-label={isWished ? 'Remove from wishlist' : 'Add to wishlist'}
+          className="absolute end-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm transition-all hover:scale-110 hover:bg-white"
+        >
+          <Heart
+            className={`h-4 w-4 transition-colors ${
+              isWished ? 'fill-pink-primary text-pink-primary' : 'fill-transparent text-text-muted'
+            }`}
+          />
+        </button>
 
         {!inStock && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/70">
@@ -103,25 +124,41 @@ export default function ProductCard({ product, rating = 0, reviewCount = 0, isNe
         </h3>
 
         {/* Stars */}
-        <div className="mb-3 flex items-center gap-1.5">
-          <div className="flex gap-0.5">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Star
-                key={i}
-                className={`h-3.5 w-3.5 ${
-                  i <= Math.round(rating)
-                    ? 'fill-amber-400 text-amber-400'
-                    : 'fill-transparent text-gray-300'
-                }`}
-              />
-            ))}
-          </div>
-          <span className="text-xs text-text-muted">({reviewCount})</span>
+        <div className="mb-3 flex items-center gap-1.5 min-h-[18px]">
+          {reviewCount > 0 ? (
+            <>
+              <div className="flex gap-0.5">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star
+                    key={i}
+                    className={`h-3.5 w-3.5 ${
+                      i <= Math.round(rating)
+                        ? 'fill-amber-400 text-amber-400'
+                        : 'fill-transparent text-gray-300'
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-xs font-medium text-amber-600">{rating.toFixed(1)}</span>
+              <span className="text-xs text-text-muted">({reviewCount})</span>
+            </>
+          ) : (
+            <span className="text-xs text-text-muted">
+              {locale === 'ar' ? 'كن أول من يقيّم' : 'Be the first to review'}
+            </span>
+          )}
         </div>
 
-        <span className="mb-4 block text-lg font-bold text-text-dark">
-          {formatPrice(product.price_retail, locale)}
-        </span>
+        <div className="mb-4 flex items-center gap-2 flex-wrap">
+          <span className="text-lg font-bold text-text-dark">
+            {formatPrice(price, locale)}
+          </span>
+          {isB2BPrice && (
+            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-700">
+              B2B
+            </span>
+          )}
+        </div>
         <button
           onClick={handleAddToCart}
           disabled={!inStock}

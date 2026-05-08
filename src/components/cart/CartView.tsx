@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useCartStore, type CartItem } from '@/store/cartStore';
 import { formatPrice, calculateOrderTotal, SHIPPING_FREE_THRESHOLD } from '@/lib/pricing';
-import { Trash2, Minus, Plus, ShoppingBag, ArrowRight, Package } from 'lucide-react';
+import { Trash2, Minus, Plus, ShoppingBag, ArrowRight, Package, Truck } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CartView() {
@@ -91,26 +91,56 @@ export default function CartView() {
           </h2>
 
           {/* Free shipping progress */}
-          {!isFreeShipping && toFreeShipping > 0 && (
-            <div className="mb-5 rounded-xl bg-pink-light p-3">
-              <p className="mb-2 text-xs font-medium text-pink-primary">
-                {t('shipping_threshold', { amount: Math.ceil(toFreeShipping) })}
-              </p>
-              <div className="h-1.5 w-full rounded-full bg-white">
-                <div
-                  className="h-1.5 rounded-full bg-pink-primary transition-all"
-                  style={{ width: `${Math.min(100, (subtotal / SHIPPING_FREE_THRESHOLD) * 100)}%` }}
-                />
+          <div className="mb-5 rounded-xl border border-pink-primary/20 bg-gradient-to-br from-pink-light/60 to-pink-light/30 p-4">
+            {isFreeShipping ? (
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100">
+                  <Package className="h-4 w-4 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-emerald-700">
+                    {locale === 'ar' ? 'تهانينا! شحن مجاني' : 'Free shipping unlocked!'}
+                  </p>
+                  <p className="text-xs text-emerald-600">
+                    {locale === 'ar' ? 'طلبك مؤهل للشحن المجاني' : 'Your order qualifies for free delivery'}
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
-
-          {isFreeShipping && (
-            <div className="mb-5 flex items-center gap-2 rounded-xl bg-emerald-50 p-3 text-sm font-medium text-emerald-700">
-              <Package className="h-4 w-4" />
-              {locale === 'ar' ? '🎉 شحن مجاني مفعّل!' : '🎉 Free shipping unlocked!'}
-            </div>
-          )}
+            ) : (
+              <>
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Truck className="h-4 w-4 text-pink-primary" />
+                    <p className="text-xs font-semibold text-pink-primary">
+                      {locale === 'ar'
+                        ? `أضف ${Math.ceil(toFreeShipping)} د.إ للشحن المجاني`
+                        : `Add AED ${Math.ceil(toFreeShipping)} for free shipping`}
+                    </p>
+                  </div>
+                  <span className="text-xs font-bold text-pink-primary">
+                    {Math.round((subtotal / SHIPPING_FREE_THRESHOLD) * 100)}%
+                  </span>
+                </div>
+                <div className="relative h-3 w-full rounded-full bg-white shadow-inner">
+                  <div
+                    className={`h-3 rounded-full transition-all duration-500 ${locale === 'ar' ? 'bg-gradient-to-l ms-auto' : 'bg-gradient-to-r'} from-pink-400 to-pink-primary`}
+                    style={{ width: `${Math.min(100, (subtotal / SHIPPING_FREE_THRESHOLD) * 100)}%` }}
+                  />
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-500"
+                    style={{ [locale === 'ar' ? 'right' : 'left']: `${Math.max(8, Math.min(96, (subtotal / SHIPPING_FREE_THRESHOLD) * 100))}%` }}
+                  >
+                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-pink-primary shadow-md ring-2 ring-white">
+                      <Truck className="h-2.5 w-2.5 text-white" />
+                    </div>
+                  </div>
+                </div>
+                <p className="mt-2 text-[11px] text-text-muted text-end">
+                  {locale === 'ar' ? `شحن مجاني فوق 250 د.إ` : `Free shipping on orders over AED 250`}
+                </p>
+              </>
+            )}
+          </div>
 
           {/* Amounts */}
           <div className="space-y-3 text-sm">

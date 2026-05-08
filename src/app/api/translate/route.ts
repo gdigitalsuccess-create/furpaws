@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
+import { rateLimit, getIp } from '@/lib/rateLimit';
 
 export async function POST(request: Request) {
+  if (!rateLimit(`translate:${getIp(request)}`, 20, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   try {
     const { text } = await request.json() as { text: string };
     if (!text?.trim()) return NextResponse.json({ translated: '' });

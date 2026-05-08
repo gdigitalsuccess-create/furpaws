@@ -4,6 +4,8 @@ import { ChevronLeft } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import ProductFormWrapper from '@/components/admin/ProductFormWrapper';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'Admin — Edit Product' };
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {

@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import ProductFormWrapper from '@/components/admin/ProductFormWrapper';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'Admin — New Product' };
 
 export default async function NewProductPage() {

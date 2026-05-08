@@ -3,13 +3,30 @@ import { ArrowRight } from 'lucide-react';
 import ProductCard from './ProductCard';
 import { fetchNewProducts } from '@/lib/supabase/products';
 import { fetchRatingsMap } from '@/lib/supabase/reviews';
+import { createClient } from '@/lib/supabase/server';
+import { getDisplayPrice } from '@/lib/pricing';
+import type { UserRole } from '@/types/database';
 
 export default async function NewArrivalsSection({ locale }: { locale: string }) {
   const products = await fetchNewProducts(4);
 
   if (products.length === 0) return null;
 
-  const ratings = await fetchRatingsMap(products.map((p) => p.id));
+  const [ratings, supabase] = await Promise.all([
+    fetchRatingsMap(products.map((p) => p.id)),
+    createClient(),
+  ]);
+
+  const { data: { user } } = await supabase.auth.getUser();
+  let userRole: UserRole = 'guest';
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single() as { data: { role: UserRole } | null };
+    userRole = profile?.role ?? 'customer';
+  }
 
   const label = locale === 'ar' ? 'وصل حديثاً' : 'New In';
   const viewAll = locale === 'ar' ? 'عرض الكل' : 'View All';
@@ -39,6 +56,7 @@ export default async function NewArrivalsSection({ locale }: { locale: string })
               rating={ratings[product.id]?.avg ?? 0}
               reviewCount={ratings[product.id]?.count ?? 0}
               isNew
+              displayPrice={getDisplayPrice(product.price_retail, product.price_b2b, userRole)}
             />
           ))}
         </div>

@@ -11,6 +11,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { SlidersHorizontal, Search, X } from 'lucide-react';
+import PriceRangeFilter from './PriceRangeFilter';
 
 const CATEGORIES = [
   { slug: '',              href: '/shop',              en: 'All Products',    ar: 'جميع المنتجات' },
@@ -30,17 +31,23 @@ const SORT_OPTIONS = [
 
 interface ShopFiltersProps {
   categorySlug?: string;
+  currentSub?: string;
   currentSort?: string;
   currentBrand?: string;
   currentQ?: string;
+  currentPriceMin?: number;
+  currentPriceMax?: number;
   brands: string[];
 }
 
 export default function ShopFilters({
   categorySlug,
+  currentSub,
   currentSort,
   currentBrand,
   currentQ,
+  currentPriceMin,
+  currentPriceMax,
   brands,
 }: ShopFiltersProps) {
   const locale = useLocale();
@@ -63,22 +70,37 @@ export default function ShopFilters({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchVal]);
 
-  function pushParam(key: string, value: string | undefined) {
-    const params = new URLSearchParams();
+  function buildParams(overrides: Record<string, string | undefined>) {
     const current: Record<string, string | undefined> = {
+      sub: currentSub,
       sort: currentSort,
       brand: currentBrand,
       q: currentQ,
+      price_min: currentPriceMin !== undefined ? String(currentPriceMin) : undefined,
+      price_max: currentPriceMax !== undefined ? String(currentPriceMax) : undefined,
     };
-    current[key] = value;
-    for (const [k, v] of Object.entries(current)) {
+    const merged = { ...current, ...overrides };
+    const params = new URLSearchParams();
+    for (const [k, v] of Object.entries(merged)) {
       if (v) params.set(k, v);
     }
-    const qs = params.toString();
+    return params.toString();
+  }
+
+  function pushParam(key: string, value: string | undefined) {
+    const qs = buildParams({ [key]: value });
     router.push((qs ? `${pathname}?${qs}` : pathname) as Parameters<typeof router.push>[0]);
   }
 
-  const hasActiveFilters = !!(currentBrand || (currentQ && currentQ.trim()));
+  function pushPrice(min: number | undefined, max: number | undefined) {
+    const qs = buildParams({
+      price_min: min !== undefined ? String(min) : undefined,
+      price_max: max !== undefined ? String(max) : undefined,
+    });
+    router.push((qs ? `${pathname}?${qs}` : pathname) as Parameters<typeof router.push>[0]);
+  }
+
+  const hasActiveFilters = !!(currentBrand || (currentQ && currentQ.trim()) || currentPriceMin !== undefined || currentPriceMax !== undefined);
 
   const filterPanel = (
     <div className="flex flex-col gap-6">
@@ -156,12 +178,21 @@ export default function ShopFilters({
         </div>
       )}
 
+      {/* Price range */}
+      <PriceRangeFilter
+        currentMin={currentPriceMin}
+        currentMax={currentPriceMax}
+        locale={locale}
+        onChange={pushPrice}
+      />
+
       {/* Clear filters */}
       {hasActiveFilters && (
         <button
           onClick={() => {
-            pushParam('brand', undefined);
+            const qs = buildParams({ brand: undefined, q: undefined, price_min: undefined, price_max: undefined });
             setSearchVal('');
+            router.push((qs ? `${pathname}?${qs}` : pathname) as Parameters<typeof router.push>[0]);
           }}
           className="flex items-center gap-1.5 text-sm font-medium text-pink-primary hover:underline"
         >
@@ -208,7 +239,7 @@ export default function ShopFilters({
               </span>
             )}
           </SheetTrigger>
-          <SheetContent side="left" className="w-72 overflow-y-auto p-0">
+          <SheetContent side={locale === 'ar' ? 'right' : 'left'} className="w-72 overflow-y-auto p-0">
             <SheetHeader className="border-b border-fur-border p-4">
               <SheetTitle>{locale === 'ar' ? 'الفلاتر' : 'Filters'}</SheetTitle>
             </SheetHeader>

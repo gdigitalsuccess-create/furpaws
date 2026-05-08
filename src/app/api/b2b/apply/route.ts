@@ -1,9 +1,19 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { rateLimit, getIp } from '@/lib/rateLimit';
+
+const ALLOWED_DOC_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+const MAX_DOC_SIZE = 10 * 1024 * 1024; // 10 MB
+
+function validateDoc(file: File): string | null {
+  if (!ALLOWED_DOC_TYPES.includes(file.type)) return 'Invalid file type. Use JPG, PNG, WebP or PDF.';
+  if (file.size > MAX_DOC_SIZE) return 'File too large. Max 10 MB.';
+  return null;
+}
 
 async function uploadDoc(admin: ReturnType<typeof createAdminClient>, file: File, folder: string): Promise<string | null> {
-  const ext = file.name.split('.').pop() ?? 'bin';
+  const ext = file.type === 'application/pdf' ? 'pdf' : file.name.split('.').pop() ?? 'bin';
   const path = `${folder}/${Date.now()}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
 
@@ -19,6 +29,10 @@ async function uploadDoc(admin: ReturnType<typeof createAdminClient>, file: File
 }
 
 export async function POST(request: Request) {
+  if (!rateLimit(`b2b:${getIp(request)}`, 3, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   try {
     const formData = await request.formData();
 
@@ -43,6 +57,15 @@ export async function POST(request: Request) {
     const admin = createAdminClient();
 
     const appId = crypto.randomUUID();
+
+    if (trade_license_file?.size) {
+      const err = validateDoc(trade_license_file);
+      if (err) return NextResponse.json({ error: `Trade license: ${err}` }, { status: 400 });
+    }
+    if (emirates_id_file?.size) {
+      const err = validateDoc(emirates_id_file);
+      if (err) return NextResponse.json({ error: `Emirates ID: ${err}` }, { status: 400 });
+    }
 
     const trade_license_doc_url = trade_license_file?.size
       ? await uploadDoc(admin, trade_license_file, `${appId}/trade-license`)

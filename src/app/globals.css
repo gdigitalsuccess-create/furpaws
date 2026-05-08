@@ -104,3 +104,30 @@
     @apply font-sans;
   }
 }
+
+/* Dual range slider thumbs */
+.price-range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #e91e8c;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  cursor: pointer;
+  pointer-events: all;
+}
+.price-range-input::-moz-range-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #e91e8c;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  cursor: pointer;
+  pointer-events: all;
+}
+.price-range-input:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px rgba(233,30,140,0.2);
+}

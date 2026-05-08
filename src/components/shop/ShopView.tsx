@@ -7,6 +7,9 @@ import ShopSearchBar from './ShopSearchBar';
 import { PER_PAGE } from '@/lib/supabase/products';
 import type { ProductRow } from '@/lib/supabase/products';
 import { fetchRatingsMap } from '@/lib/supabase/reviews';
+import { createClient } from '@/lib/supabase/server';
+import { getDisplayPrice } from '@/lib/pricing';
+import type { UserRole } from '@/types/database';
 
 interface ShopViewProps {
   products: ProductRow[];
@@ -14,9 +17,12 @@ interface ShopViewProps {
   brands: string[];
   locale: string;
   categorySlug?: string;
+  currentSub?: string;
   currentSort?: string;
   currentBrand?: string;
   currentQ?: string;
+  currentPriceMin?: number;
+  currentPriceMax?: number;
   currentPage: number;
 }
 
@@ -26,26 +32,48 @@ export default async function ShopView({
   brands,
   locale,
   categorySlug,
+  currentSub,
   currentSort,
   currentBrand,
   currentQ,
+  currentPriceMin,
+  currentPriceMax,
   currentPage,
 }: ShopViewProps) {
   const t = await getTranslations({ locale, namespace: 'shop' });
   const ratings = await fetchRatingsMap(products.map((p) => p.id));
 
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  let userRole: UserRole = 'guest';
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single() as { data: { role: UserRole } | null };
+    userRole = profile?.role ?? 'customer';
+  }
+
   const totalPages = Math.ceil(total / PER_PAGE);
 
   const buildPageHref = (p: number) => {
     const params = new URLSearchParams();
+    if (currentSub) params.set('sub', currentSub);
     if (currentSort) params.set('sort', currentSort);
     if (currentBrand) params.set('brand', currentBrand);
     if (currentQ) params.set('q', currentQ);
+    if (currentPriceMin !== undefined) params.set('price_min', String(currentPriceMin));
+    if (currentPriceMax !== undefined) params.set('price_max', String(currentPriceMax));
     if (p > 1) params.set('page', String(p));
     const qs = params.toString();
     const base = categorySlug ? `/shop/${categorySlug}` : '/shop';
     return (qs ? `${base}?${qs}` : base) as Parameters<typeof Link>[0]['href'];
   };
+
+  const pageTitle = currentSub
+    ? currentSub.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+    : t('title');
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -53,20 +81,23 @@ export default async function ShopView({
       {/* Page header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-text-dark md:text-3xl">
-          {t('title')}
+          {pageTitle}
         </h1>
         <p className="mt-1 text-sm text-text-muted">
           {t('results', { count: total })}
         </p>
       </div>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col gap-6 md:flex-row">
         {/* Sidebar + mobile bar */}
         <ShopFilters
           categorySlug={categorySlug}
+          currentSub={currentSub}
           currentSort={currentSort}
           currentBrand={currentBrand}
           currentQ={currentQ}
+          currentPriceMin={currentPriceMin}
+          currentPriceMax={currentPriceMax}
           brands={brands}
         />
 
@@ -102,6 +133,7 @@ export default async function ShopView({
                     product={p}
                     rating={ratings[p.id]?.avg ?? 0}
                     reviewCount={ratings[p.id]?.count ?? 0}
+                    displayPrice={getDisplayPrice(p.price_retail, p.price_b2b, userRole)}
                   />
                 </div>
               ))}

@@ -2,14 +2,17 @@ import { getTranslations } from 'next-intl/server';
 import ProductCard from '@/components/home/ProductCard';
 import { fetchSimilarProducts } from '@/lib/supabase/products';
 import { fetchRatingsMap } from '@/lib/supabase/reviews';
+import { getDisplayPrice } from '@/lib/pricing';
+import type { UserRole } from '@/types/database';
 
 interface SimilarProductsProps {
   categoryId: string | null;
   excludeSlug: string;
   locale: string;
+  userRole?: UserRole;
 }
 
-export default async function SimilarProducts({ categoryId, excludeSlug, locale }: SimilarProductsProps) {
+export default async function SimilarProducts({ categoryId, excludeSlug, locale, userRole = 'guest' }: SimilarProductsProps) {
   const t = await getTranslations({ locale, namespace: 'product' });
   const products = await fetchSimilarProducts(categoryId, excludeSlug);
 
@@ -27,6 +30,7 @@ export default async function SimilarProducts({ categoryId, excludeSlug, locale 
             product={p}
             rating={ratings[p.id]?.avg ?? 0}
             reviewCount={ratings[p.id]?.count ?? 0}
+            displayPrice={getDisplayPrice(p.price_retail, p.price_b2b, userRole)}
           />
         ))}
       </div>

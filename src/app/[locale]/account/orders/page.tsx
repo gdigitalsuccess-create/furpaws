@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import AccountDashboard from '@/components/account/AccountDashboard';
 import type { Metadata } from 'next';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'My Orders' };
 
 interface PageProps {

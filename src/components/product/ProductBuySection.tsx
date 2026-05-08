@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCartStore } from '@/store/cartStore';
-import { ShoppingBag, Minus, Plus, AlertTriangle, CheckCircle } from 'lucide-react';
+import { ShoppingBag, Minus, Plus, AlertTriangle, CheckCircle, ShieldCheck, RefreshCcw, Truck } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatPrice } from '@/lib/pricing';
 
@@ -22,6 +22,7 @@ interface ProductBuySectionProps {
   baseStock: number;
   firstImage: string;
   variants: Variant[];
+  sizeLabel?: string | null;
 }
 
 export default function ProductBuySection({
@@ -33,6 +34,7 @@ export default function ProductBuySection({
   baseStock,
   firstImage,
   variants,
+  sizeLabel,
 }: ProductBuySectionProps) {
   const locale = useLocale();
   const t = useTranslations('product');
@@ -41,6 +43,19 @@ export default function ProductBuySection({
   const hasVariants = variants.length > 0;
   const [selectedIdx, setSelectedIdx] = useState<number | null>(hasVariants ? null : 0);
   const [qty, setQty] = useState(1);
+  const [stickyVisible, setStickyVisible] = useState(false);
+  const addToCartRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const el = addToCartRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setStickyVisible(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const price = hasVariants && selectedIdx !== null ? variants[selectedIdx].price : basePrice;
   const stock = hasVariants && selectedIdx !== null ? variants[selectedIdx].stock : baseStock;
@@ -82,6 +97,20 @@ export default function ProductBuySection({
           </span>
         )}
       </div>
+
+      {/* Size badge (products without variants) */}
+      {!hasVariants && sizeLabel && (
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-semibold text-text-dark">
+            {locale === 'ar' ? 'الحجم' : 'Size'} :
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <span className="min-w-[52px] rounded-xl border-2 border-pink-primary bg-white px-3 py-2 text-sm font-semibold text-pink-primary text-center">
+              {sizeLabel}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Variant selector */}
       {hasVariants && (
@@ -173,6 +202,7 @@ export default function ProductBuySection({
               </button>
             </div>
             <button
+              ref={addToCartRef}
               onClick={handleAddToCart}
               className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-pink-primary px-6 py-3 font-semibold text-white shadow-lg shadow-pink-primary/25 transition-all hover:bg-pink-accent hover:-translate-y-0.5 active:translate-y-0"
             >
@@ -187,6 +217,58 @@ export default function ProductBuySection({
           {t('out_of_stock')}
         </div>
       )}
+
+      {/* Trust badges */}
+      <div className="grid grid-cols-3 divide-x divide-fur-border rounded-xl border border-fur-border bg-gray-50/60 rtl:divide-x-reverse">
+        <div className="flex flex-col items-center gap-1.5 px-3 py-3 text-center">
+          <ShieldCheck className="h-5 w-5 text-pink-primary" />
+          <span className="text-[11px] font-semibold leading-tight text-text-dark">
+            {locale === 'ar' ? 'دفع آمن' : 'Secure Payment'}
+          </span>
+        </div>
+        <div className="flex flex-col items-center gap-1.5 px-3 py-3 text-center">
+          <RefreshCcw className="h-5 w-5 text-pink-primary" />
+          <span className="text-[11px] font-semibold leading-tight text-text-dark">
+            {locale === 'ar' ? 'إرجاع سهل' : 'Easy Returns'}
+          </span>
+        </div>
+        <div className="flex flex-col items-center gap-1.5 px-3 py-3 text-center">
+          <Truck className="h-5 w-5 text-pink-primary" />
+          <span className="text-[11px] font-semibold leading-tight text-text-dark">
+            {locale === 'ar' ? 'توصيل سريع' : 'Fast UAE Delivery'}
+          </span>
+        </div>
+      </div>
+
+      {/* Sticky Add to Cart — mobile only */}
+      <div
+        className={`md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-fur-border px-4 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] transition-transform duration-300 ${
+          stickyVisible ? 'translate-y-0' : 'translate-y-full'
+        }`}
+      >
+        <div className="flex items-center gap-3 max-w-lg mx-auto">
+          <div className="flex flex-col min-w-0">
+            <span className="text-xs text-text-muted truncate">
+              {locale === 'ar' ? nameAr : nameEn}
+            </span>
+            <span className="text-lg font-extrabold text-pink-primary leading-tight">
+              {formatPrice(price, locale)}
+            </span>
+          </div>
+          <button
+            onClick={handleAddToCart}
+            disabled={!inStock || (hasVariants && selectedIdx === null)}
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-pink-primary px-5 py-3 font-semibold text-white shadow-lg shadow-pink-primary/25 transition-colors hover:bg-pink-accent disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ShoppingBag className="h-5 w-5" />
+            {!inStock
+              ? t('out_of_stock')
+              : hasVariants && selectedIdx === null
+              ? (locale === 'ar' ? 'اختر الحجم' : 'Select size')
+              : t('add_to_cart')}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

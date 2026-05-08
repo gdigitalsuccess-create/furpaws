@@ -6,6 +6,7 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { Toaster } from '@/components/ui/sonner';
 import HtmlAttributes from './HtmlAttributes';
+import CookieBanner from '@/components/layout/CookieBanner';
 
 export default async function LocaleLayout({
   children,
@@ -34,6 +35,7 @@ export default async function LocaleLayout({
           {children}
         </main>
         <Footer locale={locale} />
+        <CookieBanner />
         <Toaster />
       </NextIntlClientProvider>
     </>

@@ -1,67 +1,70 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useCartStore } from '@/store/cartStore';
-import { ShoppingBag, Menu, User, ChevronDown, ChevronRight, Search } from 'lucide-react';
+import { useWishlistStore } from '@/store/wishlistStore';
+import { ShoppingBag, Menu, User, ChevronDown, ChevronRight, Search, Truck, Heart } from 'lucide-react';
+import { SHIPPING_FREE_THRESHOLD } from '@/lib/pricing';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import LanguageSwitch from './LanguageSwitch';
 
 type SubCategory = { key: string; href: string };
 type Category    = { key: string; href: string; subcategories: SubCategory[] };
+type Suggestion  = { id: string; name_en: string; name_ar: string; slug: string; brand: string | null; image: string | null };
 
 const NAV_CATEGORIES: Category[] = [
   {
     key: 'dogs',
     href: '/shop/dogs',
     subcategories: [
-      { key: 'sub_grooming',      href: '/shop/dogs/grooming' },
-      { key: 'sub_carriers',      href: '/shop/dogs/carriers' },
-      { key: 'sub_beds',          href: '/shop/dogs/beds' },
-      { key: 'sub_toys',          href: '/shop/dogs/toys' },
-      { key: 'sub_training_pads', href: '/shop/dogs/training-pads' },
+      { key: 'sub_grooming',      href: '/shop/dogs?sub=dogs-grooming' },
+      { key: 'sub_carriers',      href: '/shop/dogs?sub=dogs-carriers' },
+      { key: 'sub_beds',          href: '/shop/dogs?sub=dogs-beds' },
+      { key: 'sub_toys',          href: '/shop/dogs?sub=dogs-toys' },
+      { key: 'sub_training_pads', href: '/shop/dogs?sub=dogs-training-pads' },
     ],
   },
   {
     key: 'cats',
     href: '/shop/cats',
     subcategories: [
-      { key: 'sub_grooming',   href: '/shop/cats/grooming' },
-      { key: 'sub_carriers',   href: '/shop/cats/carriers' },
-      { key: 'sub_beds',       href: '/shop/cats/beds' },
-      { key: 'sub_toys',       href: '/shop/cats/toys' },
-      { key: 'sub_litter_box', href: '/shop/cats/litter-box' },
+      { key: 'sub_grooming',   href: '/shop/cats?sub=cats-grooming' },
+      { key: 'sub_carriers',   href: '/shop/cats?sub=cats-carriers' },
+      { key: 'sub_beds',       href: '/shop/cats?sub=cats-beds' },
+      { key: 'sub_toys',       href: '/shop/cats?sub=cats-toys' },
+      { key: 'sub_litter_box', href: '/shop/cats?sub=cats-litter-box' },
     ],
   },
   {
     key: 'small_animals',
     href: '/shop/small-animals',
     subcategories: [
-      { key: 'sub_cages',   href: '/shop/small-animals/cages' },
-      { key: 'sub_food',    href: '/shop/small-animals/food' },
-      { key: 'sub_toys',    href: '/shop/small-animals/toys' },
-      { key: 'sub_bedding', href: '/shop/small-animals/bedding' },
+      { key: 'sub_cages',   href: '/shop/small-animals?sub=small-animals-cages' },
+      { key: 'sub_food',    href: '/shop/small-animals?sub=small-animals-food' },
+      { key: 'sub_toys',    href: '/shop/small-animals?sub=small-animals-toys' },
+      { key: 'sub_bedding', href: '/shop/small-animals?sub=small-animals-bedding' },
     ],
   },
   {
     key: 'veterinary',
     href: '/shop/veterinary',
     subcategories: [
-      { key: 'sub_supplements', href: '/shop/veterinary/supplements' },
-      { key: 'sub_first_aid',   href: '/shop/veterinary/first-aid' },
-      { key: 'sub_dental',      href: '/shop/veterinary/dental-care' },
-      { key: 'sub_flea_tick',   href: '/shop/veterinary/flea-tick' },
+      { key: 'sub_supplements', href: '/shop/veterinary?sub=veterinary-supplements' },
+      { key: 'sub_first_aid',   href: '/shop/veterinary?sub=veterinary-first-aid' },
+      { key: 'sub_dental',      href: '/shop/veterinary?sub=veterinary-dental-care' },
+      { key: 'sub_flea_tick',   href: '/shop/veterinary?sub=veterinary-flea-tick' },
     ],
   },
   {
     key: 'brands',
     href: '/shop/brands',
     subcategories: [
-      { key: 'sub_brand_furpaws', href: '/shop/brands/furpaws' },
-      { key: 'sub_brand_andis',   href: '/shop/brands/andis' },
+      { key: 'sub_brand_furpaws', href: '/shop/brands?sub=brands-furpaws' },
+      { key: 'sub_brand_andis',   href: '/shop/brands?sub=brands-andis' },
     ],
   },
 ];
@@ -69,24 +72,94 @@ const NAV_CATEGORIES: Category[] = [
 export default function Navbar() {
   const t          = useTranslations('nav');
   const locale     = useLocale();
-  const totalItems = useCartStore((s) => s.totalItems());
+  const totalItems    = useCartStore((s) => s.totalItems());
+  const subtotal      = useCartStore((s) => s.subtotal());
+  const wishlistCount = useWishlistStore((s) => s.count());
+  const isFreeShipping = subtotal >= SHIPPING_FREE_THRESHOLD;
+  const toFree = SHIPPING_FREE_THRESHOLD - subtotal;
+  const progress = Math.min(100, (subtotal / SHIPPING_FREE_THRESHOLD) * 100);
 
   const [mobileOpen,     setMobileOpen]     = useState(false);
   const [shopOpen,       setShopOpen]       = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
   const [searchQuery,    setSearchQuery]    = useState('');
+  const [suggestions,    setSuggestions]    = useState<Suggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchWrapperRef = useRef<HTMLDivElement>(null);
 
   const placeholder = locale === 'ar' ? 'ابحث عن منتجاتك المفضلة...' : 'Search for your pet\'s favorites here...';
+
+  const fetchSuggestions = useCallback(async (q: string) => {
+    if (q.trim().length < 2) { setSuggestions([]); return; }
+    try {
+      const res = await fetch(`/api/search-suggestions?q=${encodeURIComponent(q)}`);
+      const data = await res.json() as Suggestion[];
+      setSuggestions(data);
+      setShowSuggestions(data.length > 0);
+    } catch {
+      setSuggestions([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => fetchSuggestions(searchQuery), 250);
+    return () => clearTimeout(t);
+  }, [searchQuery, fetchSuggestions]);
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (searchWrapperRef.current && !searchWrapperRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, []);
 
   function handleSearch(e: { preventDefault(): void }) {
     e.preventDefault();
     const q = searchQuery.trim();
+    setShowSuggestions(false);
     if (!q) return;
     window.location.href = `/${locale}/shop?q=${encodeURIComponent(q)}`;
   }
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white shadow-md">
+
+      {/* ── Free shipping banner ── */}
+      {totalItems > 0 ? (
+        <div className={`w-full px-4 py-1.5 text-center text-xs font-semibold transition-colors ${isFreeShipping ? 'bg-emerald-500 text-white' : 'bg-pink-primary text-white'}`}>
+          {isFreeShipping ? (
+            <span className="flex items-center justify-center gap-1.5">
+              <Truck className="h-3.5 w-3.5" />
+              {locale === 'ar' ? '🎉 طلبك مؤهل للشحن المجاني!' : '🎉 Your order qualifies for free shipping!'}
+            </span>
+          ) : (
+            <span className="flex items-center justify-center gap-2">
+              <Truck className="h-3.5 w-3.5 shrink-0" />
+              <span>
+                {locale === 'ar'
+                  ? `أضف ${Math.ceil(toFree)} د.إ للحصول على شحن مجاني`
+                  : `Add AED ${Math.ceil(toFree)} more for free shipping`}
+              </span>
+              <span className="hidden sm:inline-flex h-1.5 w-24 rounded-full bg-white/30 overflow-hidden">
+                <span
+                  className="h-full rounded-full bg-white transition-all duration-500"
+                  style={{ width: `${progress}%` }}
+                />
+              </span>
+            </span>
+          )}
+        </div>
+      ) : (
+        <div className="w-full bg-fur-border/40 px-4 py-1.5 text-center text-xs text-text-muted">
+          <span className="flex items-center justify-center gap-1.5">
+            <Truck className="h-3 w-3" />
+            {locale === 'ar' ? 'شحن مجاني للطلبات فوق 250 د.إ' : 'Free shipping on orders over AED 250'}
+          </span>
+        </div>
+      )}
 
       {/* ── Row 1 : Logo + Search + Actions ── */}
       <div className="container mx-auto px-4 h-20 flex items-center gap-4">
@@ -98,13 +171,16 @@ export default function Navbar() {
 
         {/* Search bar — always visible */}
         <form onSubmit={handleSearch} className="flex-1 flex items-center">
-          <div className="relative w-full">
+          <div ref={searchWrapperRef} className="relative w-full">
             <input
               type="search"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); setShowSuggestions(true); }}
+              onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+              onKeyDown={(e) => { if (e.key === 'Escape') setShowSuggestions(false); }}
               placeholder={placeholder}
               className="h-11 w-full rounded-full border border-fur-border bg-gray-50 ps-5 pe-12 text-sm text-text-dark placeholder:text-text-muted focus:border-pink-primary focus:outline-none focus:ring-2 focus:ring-pink-primary/20 transition-all"
+              autoComplete="off"
             />
             <button
               type="submit"
@@ -113,6 +189,43 @@ export default function Navbar() {
             >
               <Search className="h-4 w-4" />
             </button>
+
+            {/* Autocomplete dropdown */}
+            {showSuggestions && suggestions.length > 0 && (
+              <ul className="absolute top-full mt-1 w-full rounded-2xl border border-fur-border bg-white shadow-xl z-50 overflow-hidden">
+                {suggestions.map((s) => (
+                  <li key={s.id}>
+                    <a
+                      href={`/${locale}/products/${s.slug}`}
+                      onClick={() => setShowSuggestions(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-pink-light transition-colors"
+                    >
+                      <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-gray-100">
+                        {s.image
+                          ? <img src={s.image} alt={s.name_en} className="h-full w-full object-cover" />
+                          : <span className="flex h-full w-full items-center justify-center text-lg">🐾</span>
+                        }
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-text-dark">
+                          {locale === 'ar' ? s.name_ar : s.name_en}
+                        </p>
+                        {s.brand && <p className="text-xs text-text-muted">{s.brand}</p>}
+                      </div>
+                    </a>
+                  </li>
+                ))}
+                <li>
+                  <button
+                    type="submit"
+                    className="flex w-full items-center gap-2 border-t border-fur-border px-4 py-2.5 text-sm font-medium text-pink-primary hover:bg-pink-light transition-colors"
+                  >
+                    <Search className="h-3.5 w-3.5" />
+                    {locale === 'ar' ? `عرض كل نتائج "${searchQuery}"` : `See all results for "${searchQuery}"`}
+                  </button>
+                </li>
+              </ul>
+            )}
           </div>
         </form>
 
@@ -126,6 +239,20 @@ export default function Navbar() {
             aria-label={t('account')}
           >
             <User className="h-5 w-5" />
+          </Link>
+
+          {/* Wishlist */}
+          <Link
+            href="/wishlist"
+            className="relative flex items-center justify-center h-9 w-9 rounded-full text-text-muted hover:text-pink-primary hover:bg-pink-light transition-colors"
+            aria-label={locale === 'ar' ? 'المفضلة' : 'Wishlist'}
+          >
+            <Heart className="h-5 w-5" />
+            {wishlistCount > 0 && (
+              <span className="absolute -top-1 -end-1 h-5 w-5 rounded-full bg-pink-primary text-white text-[11px] flex items-center justify-center font-bold leading-none">
+                {wishlistCount > 9 ? '9+' : wishlistCount}
+              </span>
+            )}
           </Link>
 
           {/* Cart */}
@@ -260,10 +387,13 @@ export default function Navbar() {
               onMouseEnter={() => setShopOpen(true)}
               onMouseLeave={() => setShopOpen(false)}
             >
-              <button className="flex items-center gap-1 px-4 h-full text-sm font-semibold text-text-dark hover:text-pink-primary transition-colors">
+              <Link
+                href="/shop"
+                className="flex items-center gap-1 px-4 h-full text-sm font-semibold text-text-dark hover:text-pink-primary transition-colors"
+              >
                 {t('shop')}
                 <ChevronDown className={`h-3.5 w-3.5 transition-transform ${shopOpen ? 'rotate-180' : ''}`} />
-              </button>
+              </Link>
 
               {shopOpen && (
                 <div className="absolute top-full start-0 bg-white border border-fur-border rounded-2xl shadow-xl py-6 px-6 z-50 min-w-[700px] flex gap-8">

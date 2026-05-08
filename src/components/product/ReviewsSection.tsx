@@ -105,7 +105,7 @@ export default function ReviewsSection({ reviews, productId, isLoggedIn, locale 
     : 0;
 
   return (
-    <section className="border-t border-fur-border pt-12 mt-12">
+    <section>
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
         <MessageSquare className="h-6 w-6 text-pink-primary" />

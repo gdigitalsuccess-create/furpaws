@@ -5,13 +5,20 @@ import ShopView from '@/components/shop/ShopView';
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const isAr = locale === 'ar';
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws.ae';
+  const description = isAr
+    ? 'تصفح كامل مجموعة مستلزمات الحيوانات الأليفة — كلاب، قطط، حيوانات صغيرة وأدوات بيطرية.'
+    : 'Browse our full range of pet accessories — dogs, cats, small animals and veterinary products.';
   return {
     title: isAr ? 'جميع المنتجات' : 'Shop All Products',
-    description: isAr
-      ? 'تصفح كامل مجموعة مستلزمات الحيوانات الأليفة — كلاب، قطط، حيوانات صغيرة وأدوات بيطرية.'
-      : 'Browse our full range of pet accessories — dogs, cats, small animals and veterinary products.',
-    alternates: { canonical: `https://furpaws.ae/${locale}/shop` },
-    openGraph: { url: `https://furpaws.ae/${locale}/shop` },
+    description,
+    alternates: { canonical: `${base}/${locale}/shop` },
+    openGraph: {
+      url: `${base}/${locale}/shop`,
+      locale: isAr ? 'ar_AE' : 'en_AE',
+      description,
+      images: [{ url: '/hero.jpg', width: 1200, height: 630, alt: 'FURPAWS Shop' }],
+    },
   };
 }
 
@@ -22,6 +29,8 @@ interface PageProps {
     sort?: string;
     q?: string;
     page?: string;
+    price_min?: string;
+    price_max?: string;
   }>;
 }
 
@@ -30,13 +39,11 @@ export default async function ShopPage({ params, searchParams }: PageProps) {
   const sp = await searchParams;
   const page = Math.max(1, parseInt(sp.page ?? '1', 10) || 1);
 
+  const priceMin = sp.price_min ? Number(sp.price_min) : undefined;
+  const priceMax = sp.price_max ? Number(sp.price_max) : undefined;
+
   const [{ products, total }, brands] = await Promise.all([
-    fetchProducts({
-      brand: sp.brand,
-      sort: sp.sort,
-      q: sp.q,
-      page,
-    }),
+    fetchProducts({ brand: sp.brand, sort: sp.sort, q: sp.q, page, priceMin, priceMax }),
     fetchBrands(),
   ]);
 
@@ -49,6 +56,8 @@ export default async function ShopPage({ params, searchParams }: PageProps) {
       currentSort={sp.sort}
       currentBrand={sp.brand}
       currentQ={sp.q}
+      currentPriceMin={priceMin}
+      currentPriceMax={priceMax}
       currentPage={page}
     />
   );

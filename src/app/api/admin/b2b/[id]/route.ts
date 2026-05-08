@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { assertAdmin } from '@/lib/assertAdmin';
+import { sendB2BApprovalEmail } from '@/lib/email';
 import { z } from 'zod';
 
 const schema = z.object({
@@ -21,6 +22,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const newStatus = action === 'approve' ? 'approved' : 'rejected';
     const admin = createAdminClient();
 
+    // Fetch the application to get the email
+    const { data: application } = await admin
+      .from('b2b_applications')
+      .select('email, contact_name, company_name')
+      .eq('id', id)
+      .single() as { data: { email: string; contact_name: string; company_name: string } | null };
+
+    // Update application status
     const { error } = await admin
       .from('b2b_applications')
       .update({ status: newStatus } as never)
@@ -28,12 +37,28 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-    // If approved and we have a linked user — update their profile role
-    if (action === 'approve' && user_id) {
-      await admin
-        .from('profiles')
-        .update({ role: 'b2b', b2b_status: 'approved' } as never)
-        .eq('id', user_id);
+    if (action === 'approve') {
+      let resolvedUserId = user_id ?? null;
+
+      // If user_id is missing, look up user by email in Supabase Auth
+      if (!resolvedUserId && application?.email) {
+        const { data: { users } } = await admin.auth.admin.listUsers();
+        const match = users.find((u) => u.email === application.email);
+        if (match) resolvedUserId = match.id;
+      }
+
+      // Update profile role if user found
+      if (resolvedUserId) {
+        await admin
+          .from('profiles')
+          .update({ role: 'b2b', b2b_status: 'approved' } as never)
+          .eq('id', resolvedUserId);
+      }
+
+      // Send approval email
+      if (application) {
+        sendB2BApprovalEmail(application.email, application.contact_name, application.company_name).catch(() => {});
+      }
     }
 
     return NextResponse.json({ success: true });

@@ -3,6 +3,8 @@ import { Link } from '@/i18n/navigation';
 import { PawPrint } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import B2BApplyForm from '@/components/b2b/B2BApplyForm';
+
+export const dynamic = 'force-dynamic';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = { title: 'Apply for B2B' };

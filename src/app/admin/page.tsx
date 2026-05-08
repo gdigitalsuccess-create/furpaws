@@ -7,6 +7,7 @@ import type { Order, B2BApplication } from '@/types/database';
 
 type RecentOrder = Pick<Order, 'id' | 'status' | 'total_amount' | 'created_at' | 'shipping_address'>;
 type PendingB2B  = Pick<B2BApplication, 'id' | 'company_name' | 'contact_name' | 'email' | 'created_at'>;
+type LowStockProduct = { id: string; name_en: string; stock_quantity: number; slug: string };
 
 export const metadata = { title: 'Admin Dashboard' };
 
@@ -20,6 +21,7 @@ export default async function AdminDashboardPage() {
     { count: lowStock },
     { data: recentOrders },
     { data: pendingB2B },
+    { data: lowStockProducts },
   ] = await Promise.all([
     admin.from('orders').select('*', { count: 'exact', head: true }),
     admin.from('orders').select('total_amount').in('status', ['paid', 'processing', 'shipped', 'delivered']),
@@ -34,6 +36,12 @@ export default async function AdminDashboardPage() {
       .eq('status', 'pending')
       .order('created_at', { ascending: false })
       .limit(5) as unknown as Promise<{ data: PendingB2B[] | null }>,
+    admin.from('products')
+      .select('id, name_en, stock_quantity, slug')
+      .lt('stock_quantity', 5)
+      .eq('is_active', true)
+      .order('stock_quantity', { ascending: true })
+      .limit(8) as unknown as Promise<{ data: LowStockProduct[] | null }>,
   ]);
 
   const totalRevenue = (revenueRows as { total_amount: number }[] | null ?? []).reduce((s, r) => s + r.total_amount, 0);
@@ -111,6 +119,30 @@ export default async function AdminDashboardPage() {
         </div>
 
       </div>
+
+      {/* Low Stock Alert */}
+      {(lowStockProducts ?? []).length > 0 && (
+        <div className="mt-6 rounded-xl border border-red-200 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-red-100 px-5 py-4">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-red-500" />
+              <h2 className="font-semibold text-gray-900">Low Stock Alert</h2>
+            </div>
+            <Link href="/admin/products" className="text-sm text-pink-primary hover:underline">Manage products</Link>
+          </div>
+          <div className="divide-y divide-gray-50">
+            {(lowStockProducts ?? []).map((p) => (
+              <div key={p.id} className="flex items-center justify-between px-5 py-3 text-sm">
+                <p className="font-medium text-gray-900 truncate max-w-[70%]">{p.name_en}</p>
+                <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${p.stock_quantity === 0 ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>
+                  {p.stock_quantity === 0 ? 'Out of stock' : `${p.stock_quantity} left`}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

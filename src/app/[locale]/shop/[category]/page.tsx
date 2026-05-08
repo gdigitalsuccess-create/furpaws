@@ -18,14 +18,21 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const isAr = locale === 'ar';
   const label = CATEGORY_LABELS[category];
   if (!label) return {};
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws.ae';
   const title = isAr ? label.ar : label.en;
+  const description = isAr
+    ? `تسوق ${label.ar} بأفضل الأسعار في الإمارات. شحن مجاني فوق 250 درهم.`
+    : `Shop ${label.en} at the best prices in UAE. Free shipping over 250 AED.`;
   return {
     title,
-    description: isAr
-      ? `تسوق ${label.ar} بأفضل الأسعار في الإمارات.`
-      : `Shop ${label.en} at the best prices in UAE. Free shipping over 250 AED.`,
-    alternates: { canonical: `https://furpaws.ae/${locale}/shop/${category}` },
-    openGraph: { url: `https://furpaws.ae/${locale}/shop/${category}` },
+    description,
+    alternates: { canonical: `${base}/${locale}/shop/${category}` },
+    openGraph: {
+      url: `${base}/${locale}/shop/${category}`,
+      locale: isAr ? 'ar_AE' : 'en_AE',
+      description,
+      images: [{ url: '/hero.jpg', width: 1200, height: 630, alt: title }],
+    },
   };
 }
 
@@ -36,6 +43,9 @@ interface PageProps {
     sort?: string;
     q?: string;
     page?: string;
+    price_min?: string;
+    price_max?: string;
+    sub?: string;
   }>;
 }
 
@@ -49,17 +59,14 @@ export default async function CategoryShopPage({ params, searchParams }: PagePro
   const sp = await searchParams;
   const page = Math.max(1, parseInt(sp.page ?? '1', 10) || 1);
 
-  // For "brands" category show all products (brand browsing handled by filter)
-  const categorySlug = category === 'brands' ? undefined : category;
+  // ?sub=grooming filters by subcategory slug; otherwise use parent category
+  const categorySlug = sp.sub ?? (category === 'brands' ? undefined : category);
+
+  const priceMin = sp.price_min ? Number(sp.price_min) : undefined;
+  const priceMax = sp.price_max ? Number(sp.price_max) : undefined;
 
   const [{ products, total }, brands] = await Promise.all([
-    fetchProducts({
-      categorySlug,
-      brand: sp.brand,
-      sort: sp.sort,
-      q: sp.q,
-      page,
-    }),
+    fetchProducts({ categorySlug, brand: sp.brand, sort: sp.sort, q: sp.q, page, priceMin, priceMax }),
     fetchBrands(),
   ]);
 
@@ -70,9 +77,12 @@ export default async function CategoryShopPage({ params, searchParams }: PagePro
       brands={brands}
       locale={locale}
       categorySlug={category}
+      currentSub={sp.sub}
       currentSort={sp.sort}
       currentBrand={sp.brand}
       currentQ={sp.q}
+      currentPriceMin={priceMin}
+      currentPriceMax={priceMax}
       currentPage={page}
     />
   );

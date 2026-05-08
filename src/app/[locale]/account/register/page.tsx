@@ -1,15 +1,23 @@
+import { redirect } from 'next/navigation';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import { PawPrint } from 'lucide-react';
 import RegisterForm from '@/components/auth/RegisterForm';
+import { createClient } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
 
+export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Register' };
 
 interface PageProps { params: Promise<{ locale: string }> }
 export default async function RegisterPage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) redirect(`/${locale}/account`);
+
   const t = await getTranslations({ locale, namespace: 'auth' });
 
   return (

@@ -7,6 +7,8 @@ import LogoutButton from '@/components/auth/LogoutButton';
 import type { Profile } from '@/types/database';
 import type { Metadata } from 'next';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'B2B Dashboard' };
 
 interface PageProps { params: Promise<{ locale: string }> }

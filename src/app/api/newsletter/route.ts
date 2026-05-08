@@ -1,12 +1,17 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { z } from 'zod';
+import { rateLimit, getIp } from '@/lib/rateLimit';
 
 const schema = z.object({
   email: z.string().email(),
 });
 
 export async function POST(request: Request) {
+  if (!rateLimit(`newsletter:${getIp(request)}`, 5, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   try {
     const body = await request.json();
     const parsed = schema.safeParse(body);
@@ -23,13 +28,11 @@ export async function POST(request: Request) {
       });
 
     if (error) {
-      console.error('[newsletter] Error:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
-  } catch (err) {
-    console.error('[newsletter] Unexpected error:', err);
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

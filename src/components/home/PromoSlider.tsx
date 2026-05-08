@@ -4,9 +4,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
+import Image from 'next/image';
 
 type Slide = {
   bg: string;
+  image?: string;
+  darkText?: boolean;
   badge?: string;
   title: string;
   subtitle?: string;
@@ -15,49 +18,61 @@ type Slide = {
 
 const SLIDES_TOP: Slide[] = [
   {
-    bg: 'from-[#1a1a2e] via-[#16213e] to-[#0f3460]',
-    badge: '🐾 New Arrival',
-    title: 'Premium Dog Food\nCollections',
-    subtitle: 'Natural ingredients, crafted for your best friend',
+    bg: 'bg-white',
+    image: '/1.png',
+    darkText: true,
+    badge: '🐱 Cat Collection',
+    title: 'Premium Cat\nToys & Accessories',
+    subtitle: 'Feathers, balls & more — keep them entertained',
+    cta: { label: 'Shop Cats', href: '/shop/cats' },
+  },
+  {
+    bg: 'bg-white',
+    image: '/2.png',
+    darkText: true,
+    badge: '🐾 Dogs & Cats',
+    title: 'Everything Your\nPets Need',
+    subtitle: 'Toys, collars, cat trees & more — all in one place',
     cta: { label: 'Shop Now', href: '/shop' },
   },
   {
-    bg: 'from-[#2d1b69] via-[#11998e] to-[#38ef7d]',
-    badge: '🐱 For Cats',
-    title: 'Discover Our\nCat Range',
-    subtitle: 'Everything your feline companion needs',
-    cta: { label: 'Explore', href: '/shop/cats' },
-  },
-  {
-    bg: 'from-[#c94b4b] via-[#4b134f] to-[#1a1a2e]',
-    badge: '🎉 Special Offer',
-    title: 'Free Shipping\nOver 250 AED',
-    subtitle: 'Across Sharjah and all UAE',
-    cta: { label: 'Shop Now', href: '/shop' },
+    bg: 'bg-[#c8a882]',
+    image: '/3.png',
+    darkText: true,
+    badge: '🎒 Travel & Carriers',
+    title: 'Adventures\nStart Here',
+    subtitle: 'Carrier backpacks & accessories for every pet parent',
+    cta: { label: 'Shop Carriers', href: '/shop' },
   },
 ];
 
 const SLIDES_BOTTOM: Slide[] = [
   {
-    bg: 'from-[#7c3aed] via-[#db2777] to-[#f59e0b]',
-    badge: '💊 Veterinary Care',
-    title: 'Health &\nWellness Range',
-    subtitle: 'Supplements, dental care & first aid for your pet',
-    cta: { label: 'Shop Veterinary', href: '/shop/veterinary' },
+    bg: 'bg-[#c94b4b]',
+    image: '/4.png',
+    darkText: false,
+    badge: '😴 Cozy Beds',
+    title: 'Premium Beds\nFor Every Pet',
+    subtitle: 'Plush, orthopedic & stylish — they deserve the best',
+    cta: { label: 'Shop Beds', href: '/shop' },
   },
   {
-    bg: 'from-[#065f46] via-[#0d9488] to-[#1e40af]',
-    badge: '🏷️ B2B Wholesale',
-    title: 'Are You a\nPet Store?',
-    subtitle: 'Get exclusive wholesale pricing — up to 30% off',
-    cta: { label: 'Apply Now', href: '/b2b' },
+    bg: 'bg-[#4a7c59]',
+    image: '/5.png',
+    darkText: false,
+    badge: '✈️ Travel Ready',
+    title: 'Carriers &\nTravel Essentials',
+    subtitle: 'Safe, comfortable journeys for your furry companion',
+    cta: { label: 'Shop Travel', href: '/shop' },
   },
   {
-    bg: 'from-[#1e1b4b] via-[#7c3aed] to-[#c026d3]',
-    badge: '🐹 Small Animals',
-    title: 'Cages, Toys &\nTreats for Small Pets',
-    subtitle: 'Rabbits, hamsters, guinea pigs & more',
-    cta: { label: 'Explore', href: '/shop/small-animals' },
+    bg: 'bg-[#f59e0b]',
+    image: '/6.png',
+    darkText: false,
+    badge: '🎾 New Arrivals',
+    title: 'Play Time\nJust Got Better',
+    subtitle: 'Fresh toys for dogs & cats — tunnels, rings & more',
+    cta: { label: 'Shop Toys', href: '/shop' },
   },
 ];
 
@@ -83,6 +98,8 @@ export default function PromoSlider({ variant = 'top' }: { variant?: 'top' | 'bo
 
   const slide = SLIDES[current];
 
+  const isDark = !slide.darkText;
+
   return (
     <section
       className="relative w-full overflow-hidden"
@@ -90,39 +107,65 @@ export default function PromoSlider({ variant = 'top' }: { variant?: 'top' | 'bo
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* Slides */}
+      {/* Slides — image or gradient */}
       {SLIDES.map((s, i) => (
         <div
           key={i}
-          className={`absolute inset-0 bg-gradient-to-r ${s.bg} transition-opacity duration-700 ${
+          className={`absolute inset-0 transition-opacity duration-700 ${
             i === current ? 'opacity-100' : 'opacity-0'
-          }`}
-        />
+          } ${s.image ? s.bg : `bg-gradient-to-r ${s.bg}`}`}
+        >
+          {s.image && (
+            <Image
+              src={s.image}
+              alt=""
+              fill
+              className="object-cover"
+              priority={i === 0}
+            />
+          )}
+        </div>
       ))}
 
-      {/* Decorative circles */}
-      <div className="pointer-events-none absolute -end-20 -top-20 h-80 w-80 rounded-full bg-white/5" />
-      <div className="pointer-events-none absolute -bottom-10 end-40 h-48 w-48 rounded-full bg-white/5" />
-      <div className="pointer-events-none absolute start-1/3 top-1/2 h-32 w-32 -translate-y-1/2 rounded-full bg-white/5" />
+      {/* Overlay for readability on light-bg images */}
+      {slide.darkText && (
+        <div className="pointer-events-none absolute inset-0 bg-white/30" />
+      )}
 
       {/* Content */}
       <div className="relative flex h-full items-center justify-center px-16 text-center">
         <div className="max-w-2xl">
           {slide.badge && (
-            <span className="mb-3 inline-block rounded-full bg-white/20 px-4 py-1 text-sm font-semibold text-white backdrop-blur-sm">
+            <span
+              className={`mb-3 inline-block rounded-full px-4 py-1 text-sm font-semibold backdrop-blur-sm ${
+                isDark
+                  ? 'bg-white/20 text-white'
+                  : 'bg-black/10 text-gray-800'
+              }`}
+            >
               {slide.badge}
             </span>
           )}
-          <h2 className="mb-2 whitespace-pre-line text-3xl font-extrabold leading-tight text-white md:text-4xl lg:text-5xl">
+          <h2
+            className={`mb-2 whitespace-pre-line text-3xl font-extrabold leading-tight md:text-4xl lg:text-5xl ${
+              isDark ? 'text-white' : 'text-gray-900'
+            }`}
+          >
             {slide.title}
           </h2>
           {slide.subtitle && (
-            <p className="mb-6 text-base text-white/75">{slide.subtitle}</p>
+            <p className={`mb-6 text-base ${isDark ? 'text-white/75' : 'text-gray-600'}`}>
+              {slide.subtitle}
+            </p>
           )}
           {slide.cta && (
             <Link
               href={slide.cta.href as Parameters<typeof Link>[0]['href']}
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-2.5 text-sm font-bold text-gray-900 shadow-lg transition-all hover:bg-white/90 hover:-translate-y-0.5"
+              className={`inline-flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold shadow-lg transition-all hover:-translate-y-0.5 ${
+                isDark
+                  ? 'bg-white text-gray-900 hover:bg-white/90'
+                  : 'bg-pink-500 text-white hover:bg-pink-600'
+              }`}
             >
               {slide.cta.label}
             </Link>
@@ -133,7 +176,11 @@ export default function PromoSlider({ variant = 'top' }: { variant?: 'top' | 'bo
       {/* Left arrow */}
       <button
         onClick={locale === 'ar' ? next : prev}
-        className="absolute start-4 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition-colors hover:bg-white/40"
+        className={`absolute start-4 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-sm transition-colors ${
+          isDark
+            ? 'bg-white/20 text-white hover:bg-white/40'
+            : 'bg-black/15 text-gray-800 hover:bg-black/25'
+        }`}
         aria-label="Previous"
       >
         <ChevronLeft className="h-5 w-5" />
@@ -142,7 +189,11 @@ export default function PromoSlider({ variant = 'top' }: { variant?: 'top' | 'bo
       {/* Right arrow */}
       <button
         onClick={locale === 'ar' ? prev : next}
-        className="absolute end-4 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition-colors hover:bg-white/40"
+        className={`absolute end-4 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-sm transition-colors ${
+          isDark
+            ? 'bg-white/20 text-white hover:bg-white/40'
+            : 'bg-black/15 text-gray-800 hover:bg-black/25'
+        }`}
         aria-label="Next"
       >
         <ChevronRight className="h-5 w-5" />
@@ -155,7 +206,9 @@ export default function PromoSlider({ variant = 'top' }: { variant?: 'top' | 'bo
             key={i}
             onClick={() => setCurrent(i)}
             className={`h-2 rounded-full transition-all duration-300 ${
-              i === current ? 'w-6 bg-white' : 'w-2 bg-white/50'
+              isDark
+                ? i === current ? 'w-6 bg-white' : 'w-2 bg-white/50'
+                : i === current ? 'w-6 bg-gray-800' : 'w-2 bg-gray-400'
             }`}
             aria-label={`Slide ${i + 1}`}
           />
