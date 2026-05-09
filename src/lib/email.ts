@@ -17,7 +17,7 @@ export async function sendContactEmail(data: {
 
   const body = `
     <div style="background:${PINK};border-radius:12px 12px 0 0;padding:28px;text-align:center">
-      <h1 style="margin:0;color:#fff;font-size:22px">📩 New Contact Message</h1>
+      <h1 style="margin:0;color:#fff;font-size:22px">New Contact Message</h1>
     </div>
     <div style="background:#fff;border:1px solid #f0f0f0;border-top:none;border-radius:0 0 12px 12px;padding:28px;margin-bottom:24px">
       <table style="width:100%;font-size:14px;border-collapse:collapse;margin-bottom:20px">
@@ -34,7 +34,7 @@ export async function sendContactEmail(data: {
     from: FROM,
     to: adminEmail,
     replyTo: email,
-    subject: `📩 Contact: ${subject || name} — FURPAWS`,
+    subject: `Contact: ${subject || name} — FURPAWS`,
     html: buildWrapper(body),
   });
 
@@ -44,7 +44,7 @@ export async function sendContactEmail(data: {
 export async function sendBackInStockEmail(customerEmail: string, productName: string, productUrl: string) {
   const html = buildWrapper(`
     <div style="background:${PINK_LIGHT};border-radius:8px;padding:24px;margin-bottom:24px;border:1px solid #f9c0dd">
-      <h2 style="margin:0 0 8px;color:${PINK}">🎉 Back in Stock!</h2>
+      <h2 style="margin:0 0 8px;color:${PINK}">Back in Stock!</h2>
       <p style="margin:0;color:#555">Good news — <strong>${productName}</strong> is back in stock and ready to order.</p>
     </div>
     <div style="text-align:center;margin-bottom:24px">
@@ -53,7 +53,7 @@ export async function sendBackInStockEmail(customerEmail: string, productName: s
     <p style="color:#999;font-size:12px;text-align:center">Hurry — stock is limited!</p>
   `);
 
-  const { error } = await resend.emails.send({ from: FROM, to: customerEmail, subject: `✅ ${productName} is back in stock — FURPAWS`, html });
+  const { error } = await resend.emails.send({ from: FROM, to: customerEmail, subject: `'${productName}' is back in stock — FURPAWS`, html });
   if (error) { console.error('[email] Back-in-stock failed:', error); throw new Error(JSON.stringify(error)); }
 }
 
@@ -87,7 +87,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
       <td style="padding:12px 0;border-bottom:1px solid #f0f0f0;vertical-align:middle">
         ${item.image
           ? `<img src="${item.image}" alt="${item.name}" width="48" height="48" style="border-radius:8px;object-fit:cover;margin-right:12px;vertical-align:middle">`
-          : `<span style="display:inline-block;width:48px;height:48px;background:${PINK_LIGHT};border-radius:8px;margin-right:12px;vertical-align:middle;text-align:center;line-height:48px;font-size:20px">🐾</span>`
+          : `<span style="display:inline-block;width:48px;height:48px;background:${PINK_LIGHT};border-radius:8px;margin-right:12px;vertical-align:middle"></span>`
         }
         <span style="font-weight:600;color:#333">${item.name}</span>
         <span style="display:block;font-size:12px;color:#999;margin-top:2px">Qty: ${item.quantity}</span>
@@ -111,7 +111,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
 
   const body = `
     <div style="background:linear-gradient(135deg,${PINK} 0%,#c0157a 100%);border-radius:12px 12px 0 0;padding:32px;text-align:center;margin-bottom:0">
-      <h1 style="margin:0 0 4px;color:#fff;font-size:28px;letter-spacing:-0.5px">✅ Order Confirmed!</h1>
+      <h1 style="margin:0 0 4px;color:#fff;font-size:28px;letter-spacing:-0.5px">Order Confirmed!</h1>
       <p style="margin:0;color:rgba(255,255,255,0.85);font-size:14px">Order <strong>#${orderRef}</strong></p>
     </div>
 
@@ -125,7 +125,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
 
       <table style="width:100%;border-collapse:collapse;margin-bottom:24px">
         <tr><td style="padding:4px 0;color:#666">Subtotal</td><td style="padding:4px 0;text-align:right">${subtotal.toFixed(2)} AED</td></tr>
-        <tr><td style="padding:4px 0;color:#666">Shipping</td><td style="padding:4px 0;text-align:right">${shippingAmount === 0 ? '<span style="color:#16a34a;font-weight:600">Free 🎉</span>' : shippingAmount.toFixed(2) + ' AED'}</td></tr>
+        <tr><td style="padding:4px 0;color:#666">Shipping</td><td style="padding:4px 0;text-align:right">${shippingAmount === 0 ? '<span style="color:#16a34a;font-weight:600">Free</span>' : shippingAmount.toFixed(2) + ' AED'}</td></tr>
         ${discountRow}
         <tr style="border-top:2px solid ${PINK}">
           <td style="padding:12px 0 4px;font-weight:700;font-size:16px;color:#333">Total</td>
@@ -152,7 +152,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
   const { error } = await resend.emails.send({
     from: FROM,
     to: customerEmail,
-    subject: `✅ Order Confirmed #${orderRef} — FURPAWS`,
+    subject: `Order Confirmed #${orderRef} — FURPAWS`,
     html,
   });
 
@@ -168,7 +168,7 @@ export async function sendAdminOrderNotification(data: OrderEmailData) {
 
   const body = `
     <div style="background:${PINK};border-radius:12px;padding:24px;text-align:center;margin-bottom:24px">
-      <h1 style="margin:0;color:#fff;font-size:22px">🛍️ New Order Received</h1>
+      <h1 style="margin:0;color:#fff;font-size:22px">New Order Received</h1>
       <p style="margin:4px 0 0;color:rgba(255,255,255,0.85);font-size:14px">#${orderRef}</p>
     </div>
     <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;padding:24px;margin-bottom:16px">
@@ -185,7 +185,7 @@ export async function sendAdminOrderNotification(data: OrderEmailData) {
   const { error } = await resend.emails.send({
     from: FROM,
     to: adminEmail,
-    subject: `🛍️ New Order #${orderRef} — ${totalAmount.toFixed(2)} AED`,
+    subject: `New Order #${orderRef} — ${totalAmount.toFixed(2)} AED`,
     html: buildWrapper(body),
   });
 
@@ -218,7 +218,7 @@ export async function sendBankTransferEmail(data: OrderEmailData) {
 
   const body = `
     <div style="background:linear-gradient(135deg,#1e40af 0%,#1d4ed8 100%);border-radius:12px 12px 0 0;padding:32px;text-align:center">
-      <h1 style="margin:0 0 4px;color:#fff;font-size:26px">✅ Order Confirmed!</h1>
+      <h1 style="margin:0 0 4px;color:#fff;font-size:26px">Order Confirmed!</h1>
       <p style="margin:0;color:rgba(255,255,255,0.85);font-size:14px">Order <strong>#${orderRef}</strong> — Bank Transfer</p>
     </div>
     <div style="background:#fff;border:1px solid #f0f0f0;border-top:none;border-radius:0 0 12px 12px;padding:32px;margin-bottom:24px">
@@ -226,7 +226,7 @@ export async function sendBankTransferEmail(data: OrderEmailData) {
       <p style="margin:0 0 24px;color:#555;font-size:15px">Thank you for your order! To complete your purchase, please transfer the amount below to our bank account. Use your order reference as the payment description.</p>
 
       <div style="background:#eff6ff;border:2px solid #bfdbfe;border-radius:12px;padding:20px;margin-bottom:24px">
-        <h3 style="margin:0 0 14px;color:#1e40af;font-size:13px;text-transform:uppercase;letter-spacing:1px">🏦 Bank Transfer Details</h3>
+        <h3 style="margin:0 0 14px;color:#1e40af;font-size:13px;text-transform:uppercase;letter-spacing:1px">Bank Transfer Details</h3>
         <table style="width:100%;font-size:14px;border-collapse:collapse">
           <tr><td style="padding:5px 0;color:#555;width:40%">Bank</td><td style="padding:5px 0;font-weight:700;color:#1e3a8a">${bankName}</td></tr>
           <tr><td style="padding:5px 0;color:#555">Account Name</td><td style="padding:5px 0;font-weight:700;color:#1e3a8a">${accountName}</td></tr>
@@ -235,7 +235,7 @@ export async function sendBankTransferEmail(data: OrderEmailData) {
           <tr><td style="padding:5px 0;color:#555">Reference</td><td style="padding:5px 0;font-weight:700;color:${PINK};font-size:15px">#${orderRef}</td></tr>
           <tr style="border-top:2px solid #bfdbfe"><td style="padding:10px 0 5px;color:#555">Amount to Transfer</td><td style="padding:10px 0 5px;font-weight:800;font-size:18px;color:${PINK}">${totalAmount.toFixed(2)} AED</td></tr>
         </table>
-        <p style="margin:12px 0 0;font-size:12px;color:#6b7280">⚠️ Please include <strong>#${orderRef}</strong> in your transfer description. Orders are cancelled if payment is not received within 48 hours.</p>
+        <p style="margin:12px 0 0;font-size:12px;color:#6b7280">Please include <strong>#${orderRef}</strong> in your transfer description. Orders are cancelled if payment is not received within 48 hours.</p>
       </div>
 
       <h3 style="margin:0 0 12px;color:#333;font-size:13px;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid ${PINK};padding-bottom:8px">Order Summary</h3>
@@ -244,7 +244,7 @@ export async function sendBankTransferEmail(data: OrderEmailData) {
       </table>
       <table style="width:100%;border-collapse:collapse;margin-bottom:24px">
         <tr><td style="padding:4px 0;color:#666">Subtotal</td><td style="padding:4px 0;text-align:right">${subtotal.toFixed(2)} AED</td></tr>
-        <tr><td style="padding:4px 0;color:#666">Shipping</td><td style="padding:4px 0;text-align:right">${shippingAmount === 0 ? '<span style="color:#16a34a">Free 🎉</span>' : shippingAmount.toFixed(2) + ' AED'}</td></tr>
+        <tr><td style="padding:4px 0;color:#666">Shipping</td><td style="padding:4px 0;text-align:right">${shippingAmount === 0 ? '<span style="color:#16a34a">Free</span>' : shippingAmount.toFixed(2) + ' AED'}</td></tr>
         ${discountRow}
         <tr style="border-top:2px solid ${PINK}">
           <td style="padding:10px 0 4px;font-weight:700;color:#333">Total</td>
@@ -266,7 +266,7 @@ export async function sendBankTransferEmail(data: OrderEmailData) {
   const { error } = await resend.emails.send({
     from: FROM,
     to: customerEmail,
-    subject: `🏦 Bank Transfer Details — Order #${orderRef} — FURPAWS`,
+    subject: `Bank Transfer Details — Order #${orderRef} — FURPAWS`,
     html: buildWrapper(body),
   });
 
@@ -279,7 +279,7 @@ export async function sendB2BApprovalEmail(to: string, contactName: string, comp
 
   const body = `
     <div style="background:linear-gradient(135deg,${PINK} 0%,#c0157a 100%);border-radius:12px 12px 0 0;padding:32px;text-align:center">
-      <h1 style="margin:0 0 4px;color:#fff;font-size:26px">🎉 You're Approved!</h1>
+      <h1 style="margin:0 0 4px;color:#fff;font-size:26px">You're Approved!</h1>
       <p style="margin:0;color:rgba(255,255,255,0.85);font-size:14px">Welcome to FURPAWS Wholesale</p>
     </div>
     <div style="background:#fff;border:1px solid #f0f0f0;border-top:none;border-radius:0 0 12px 12px;padding:32px;margin-bottom:24px">
@@ -292,9 +292,9 @@ export async function sendB2BApprovalEmail(to: string, contactName: string, comp
       </p>
       <div style="background:${PINK_LIGHT};border-radius:10px;padding:16px;margin-bottom:24px">
         <p style="margin:0;font-size:13px;color:#333">
-          ✅ &nbsp;<strong>Wholesale prices</strong> activated on your account<br>
-          ✅ &nbsp;<strong>Full catalogue</strong> access at B2B rates<br>
-          ✅ &nbsp;<strong>Priority support</strong> for bulk orders
+          &nbsp;<strong>Wholesale prices</strong> activated on your account<br>
+          &nbsp;<strong>Full catalogue</strong> access at B2B rates<br>
+          &nbsp;<strong>Priority support</strong> for bulk orders
         </p>
       </div>
       <div style="text-align:center">
@@ -310,7 +310,7 @@ export async function sendB2BApprovalEmail(to: string, contactName: string, comp
   const { error } = await resend.emails.send({
     from: FROM,
     to,
-    subject: '🎉 Your FURPAWS B2B Account is Approved!',
+    subject: 'Your FURPAWS B2B Account is Approved!',
     html: buildWrapper(body),
   });
 
@@ -328,8 +328,8 @@ function buildWrapper(content: string) {
 <body style="margin:0;padding:0;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif">
   <div style="max-width:600px;margin:32px auto;padding:0 16px 32px">
     <div style="text-align:center;margin-bottom:24px">
-      <p style="margin:0;font-size:22px;font-weight:800;color:${PINK};letter-spacing:-0.5px">🐾 FURPAWS</p>
-      <p style="margin:4px 0 0;font-size:12px;color:#999">Your pet's favorite store · Sharjah, UAE</p>
+      <img src="${BASE_URL}/logo.png" alt="FURPAWS" width="140" height="auto" style="display:block;margin:0 auto 8px">
+      <p style="margin:0;font-size:12px;color:#999">Your pet's favorite store · Sharjah, UAE</p>
     </div>
     ${content}
   </div>
