@@ -155,7 +155,7 @@ export default function OfflineCheckoutForm({
 
         {isCod ? (
           <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800 space-y-1">
-            <p className="font-semibold">{locale === 'ar' ? '💵 كيف يعمل؟' : '💵 How it works'}</p>
+            <p className="font-semibold">{locale === 'ar' ? 'كيف يعمل؟' : 'How it works'}</p>
             <p>{locale === 'ar'
               ? 'ستتلقى تأكيداً بالبريد الإلكتروني. يجب دفع المبلغ كاملاً نقداً عند استلام الطلب.'
               : "You'll receive an order confirmation by email. Full payment in cash is required upon delivery."}
@@ -163,7 +163,7 @@ export default function OfflineCheckoutForm({
           </div>
         ) : (
           <div className="rounded-xl bg-blue-50 border border-blue-200 p-4 text-sm text-blue-800 space-y-1">
-            <p className="font-semibold">{locale === 'ar' ? '🏦 كيف يعمل؟' : '🏦 How it works'}</p>
+            <p className="font-semibold">{locale === 'ar' ? 'كيف يعمل؟' : 'How it works'}</p>
             <p>{locale === 'ar'
               ? 'بعد تأكيد طلبك، ستتلقى بريداً إلكترونياً يتضمن بيانات حسابنا البنكي. يُرجى تحويل المبلغ خلال 48 ساعة.'
               : "After confirming your order, you'll receive an email with our bank account details. Please transfer within 48 hours to avoid cancellation."}

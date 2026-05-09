@@ -40,7 +40,7 @@ export default function OrderSummary({ items, subtotal, shippingAmount, discount
                 {item.image ? (
                   <img src={item.image} alt={name} className="h-full w-full object-cover" />
                 ) : (
-                  <span className="flex h-full w-full items-center justify-center text-xl">🐾</span>
+                  <span className="flex h-full w-full items-center justify-center text-xl"></span>
                 )}
                 <span className="absolute -end-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-pink-primary text-[9px] font-bold text-white">
                   {item.quantity}
