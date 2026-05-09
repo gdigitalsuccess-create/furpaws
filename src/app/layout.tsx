@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   },
   description: 'Premium pet accessories distributor in Sharjah, UAE. Shop for dogs, cats and small animals.',
   keywords: ['pet accessories UAE', 'pet shop Sharjah', 'dog food UAE', 'cat accessories', 'pet supplies Dubai', 'furpaws'],
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws.ae'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws-uae.com'),
   openGraph: {
     siteName: 'FURPAWS',
     locale: 'en_AE',

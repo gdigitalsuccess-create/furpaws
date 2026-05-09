@@ -112,7 +112,7 @@ export default function OfflineCheckoutForm({
 
           <div>
             <label className={labelCls}>{locale === 'ar' ? 'الهاتف' : 'Phone'}</label>
-            <input {...register('phone')} type="tel" placeholder="+971 50 000 0000" className={inputCls} />
+            <input {...register('phone')} type="tel" placeholder="+971 55 188 5039" className={inputCls} />
             {errors.phone && <p className={errorCls}>{errors.phone.message}</p>}
           </div>
 

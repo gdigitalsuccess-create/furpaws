@@ -71,8 +71,8 @@ function ContactEn() {
                 </div>
                 <div>
                   <p className="font-semibold text-text-dark">Email</p>
-                  <a href="mailto:hello@furpaws.ae" className="text-pink-primary text-sm hover:underline">
-                    hello@furpaws.ae
+                  <a href="mailto:hello@furpaws-uae.com" className="text-pink-primary text-sm hover:underline">
+                    hello@furpaws-uae.com
                   </a>
                 </div>
               </div>
@@ -82,8 +82,8 @@ function ContactEn() {
                 </div>
                 <div>
                   <p className="font-semibold text-text-dark">WhatsApp</p>
-                  <a href="https://wa.me/971500000000" target="_blank" rel="noopener noreferrer" className="text-pink-primary text-sm hover:underline">
-                    +971 50 000 0000
+                  <a href="https://wa.me/971551885039" target="_blank" rel="noopener noreferrer" className="text-pink-primary text-sm hover:underline">
+                    +971 55 188 5039
                   </a>
                 </div>
               </div>
@@ -235,8 +235,8 @@ function ContactAr() {
                 </div>
                 <div>
                   <p className="font-semibold text-text-dark">البريد الإلكتروني</p>
-                  <a href="mailto:hello@furpaws.ae" className="text-pink-primary text-sm hover:underline">
-                    hello@furpaws.ae
+                  <a href="mailto:hello@furpaws-uae.com" className="text-pink-primary text-sm hover:underline">
+                    hello@furpaws-uae.com
                   </a>
                 </div>
               </div>
@@ -246,8 +246,8 @@ function ContactAr() {
                 </div>
                 <div>
                   <p className="font-semibold text-text-dark">واتساب</p>
-                  <a href="https://wa.me/971500000000" target="_blank" rel="noopener noreferrer" className="text-pink-primary text-sm hover:underline">
-                    +971 50 000 0000
+                  <a href="https://wa.me/971551885039" target="_blank" rel="noopener noreferrer" className="text-pink-primary text-sm hover:underline">
+                    +971 55 188 5039
                   </a>
                 </div>
               </div>

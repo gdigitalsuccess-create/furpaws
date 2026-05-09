@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation';
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const isAr = locale === 'ar';
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws.ae';
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws-uae.com';
   return {
     title: isAr ? 'فيرباوز — مستلزمات الحيوانات الأليفة في الإمارات' : 'FURPAWS — Premium Pet Accessories UAE',
     description: isAr
@@ -50,7 +50,7 @@ export default async function HomePage({ params }: PageProps) {
 
   setRequestLocale(locale);
 
-  const siteBase = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws.ae';
+  const siteBase = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws-uae.com';
   const orgJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',

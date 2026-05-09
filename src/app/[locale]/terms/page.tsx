@@ -66,7 +66,7 @@ function EnglishTerms({ updated }: { updated: string }) {
         </ul>
         <p className="mt-2"><strong>Excluded from returns:</strong> perishable goods, opened food/treats, grooming items that have been used, and products damaged by the buyer.</p>
         <p className="mt-2"><strong>Refund process:</strong> Refunds are processed to the original payment method within <strong>5–10 business days</strong> after we receive and inspect the returned item.</p>
-        <p className="mt-2">To initiate a return, contact us at <a href="mailto:support@furpaws.ae">support@furpaws.ae</a> with your order number.</p>
+        <p className="mt-2">To initiate a return, contact us at <a href="mailto:support@furpaws-uae.com">support@furpaws-uae.com</a> with your order number.</p>
       </Section>
 
       <Section title="6. Defective or Wrong Items">
@@ -90,7 +90,7 @@ function EnglishTerms({ updated }: { updated: string }) {
       </Section>
 
       <Section title="11. Contact">
-        <p><strong>FURPAWS</strong><br />Sharjah, United Arab Emirates<br />Email: <a href="mailto:support@furpaws.ae">support@furpaws.ae</a></p>
+        <p><strong>FURPAWS</strong><br />Sharjah, United Arab Emirates<br />Email: <a href="mailto:support@furpaws-uae.com">support@furpaws-uae.com</a></p>
       </Section>
     </LegalLayout>
   );
@@ -134,7 +134,7 @@ function ArabicTerms({ updated }: { updated: string }) {
           <li>مرفقة برقم الطلب.</li>
           <li>غير مشمولة بالاستثناءات: المواد الغذائية المفتوحة، منتجات العناية المستخدمة.</li>
         </ul>
-        <p className="mt-2">تُعالَج المبالغ المستردة خلال <strong>5–10 أيام عمل</strong> بعد استلام وفحص المنتج. للبدء: <a href="mailto:support@furpaws.ae">support@furpaws.ae</a></p>
+        <p className="mt-2">تُعالَج المبالغ المستردة خلال <strong>5–10 أيام عمل</strong> بعد استلام وفحص المنتج. للبدء: <a href="mailto:support@furpaws-uae.com">support@furpaws-uae.com</a></p>
       </Section>
 
       <Section title="٦. القانون الحاكم">
@@ -142,7 +142,7 @@ function ArabicTerms({ updated }: { updated: string }) {
       </Section>
 
       <Section title="٧. التواصل">
-        <p><strong>فيرباوز</strong><br />الشارقة، الإمارات العربية المتحدة<br />البريد الإلكتروني: <a href="mailto:support@furpaws.ae">support@furpaws.ae</a></p>
+        <p><strong>فيرباوز</strong><br />الشارقة، الإمارات العربية المتحدة<br />البريد الإلكتروني: <a href="mailto:support@furpaws-uae.com">support@furpaws-uae.com</a></p>
       </Section>
     </LegalLayout>
   );

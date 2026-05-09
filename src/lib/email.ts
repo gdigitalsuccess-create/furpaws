@@ -2,7 +2,7 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = process.env.RESEND_FROM_EMAIL ?? 'onboarding@resend.dev';
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws.ae';
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws-uae.com';
 const PINK = '#e91e8c';
 const PINK_LIGHT = '#fff0f7';
 
@@ -142,7 +142,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
     </div>
 
     <p style="color:#bbb;font-size:12px;text-align:center;margin:0">
-      Questions? <a href="mailto:support@furpaws.ae" style="color:${PINK}">support@furpaws.ae</a><br>
+      Questions? <a href="mailto:support@furpaws-uae.com" style="color:${PINK}">support@furpaws-uae.com</a><br>
       FURPAWS · Sharjah, UAE
     </p>
   `;
@@ -258,7 +258,7 @@ export async function sendBankTransferEmail(data: OrderEmailData) {
       </div>
     </div>
     <p style="color:#bbb;font-size:12px;text-align:center;margin:0">
-      Questions? <a href="mailto:support@furpaws.ae" style="color:${PINK}">support@furpaws.ae</a><br>
+      Questions? <a href="mailto:support@furpaws-uae.com" style="color:${PINK}">support@furpaws-uae.com</a><br>
       FURPAWS · Sharjah, UAE
     </p>
   `;
@@ -302,7 +302,7 @@ export async function sendB2BApprovalEmail(to: string, contactName: string, comp
       </div>
     </div>
     <p style="color:#bbb;font-size:12px;text-align:center;margin:0">
-      Questions? <a href="mailto:support@furpaws.ae" style="color:${PINK}">support@furpaws.ae</a><br>
+      Questions? <a href="mailto:support@furpaws-uae.com" style="color:${PINK}">support@furpaws-uae.com</a><br>
       FURPAWS · Sharjah, UAE
     </p>
   `;

@@ -10,7 +10,7 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
   const isAr = locale === 'ar';
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws.ae';
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws-uae.com';
   return {
     title: isAr ? 'من نحن' : 'About Us',
     description: isAr

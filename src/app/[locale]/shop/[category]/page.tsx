@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const isAr = locale === 'ar';
   const label = CATEGORY_LABELS[category];
   if (!label) return {};
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws.ae';
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws-uae.com';
   const title = isAr ? label.ar : label.en;
   const description = isAr
     ? `تسوق ${label.ar} بأفضل الأسعار في الإمارات. شحن مجاني فوق 250 درهم.`

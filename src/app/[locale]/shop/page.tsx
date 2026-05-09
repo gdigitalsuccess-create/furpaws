@@ -5,7 +5,7 @@ import ShopView from '@/components/shop/ShopView';
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const isAr = locale === 'ar';
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws.ae';
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws-uae.com';
   const description = isAr
     ? 'تصفح كامل مجموعة مستلزمات الحيوانات الأليفة — كلاب، قطط، حيوانات صغيرة وأدوات بيطرية.'
     : 'Browse our full range of pet accessories — dogs, cats, small animals and veterinary products.';

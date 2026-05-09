@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/admin/', '/api/', '/en/account/', '/ar/account/', '/en/checkout/', '/ar/checkout/'],
       },
     ],
-    sitemap: 'https://furpaws.ae/sitemap.xml',
+    sitemap: 'https://furpaws-uae.com/sitemap.xml',
   };
 }

@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { createAdminClient } from '@/lib/supabase/admin';
 
-const BASE = 'https://furpaws.ae';
+const BASE = 'https://furpaws-uae.com';
 const LOCALES = ['en', 'ar'];
 const CATEGORIES = ['dogs', 'cats', 'small-animals', 'veterinary'];
 

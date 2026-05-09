@@ -142,7 +142,7 @@ export default function CheckoutForm({ items, subtotal, finalTotal, discount, on
           {/* Phone */}
           <div>
             <label className={labelCls}>{t('phone')}</label>
-            <input {...register('phone')} type="tel" placeholder="+971 50 000 0000" className={inputCls} />
+            <input {...register('phone')} type="tel" placeholder="+971 55 188 5039" className={inputCls} />
             {errors.phone && <p className={errorCls}>{errors.phone.message}</p>}
           </div>
 

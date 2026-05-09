@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const description = (isAr ? product.description_ar : product.description_en)
     ?? `Buy ${product.name_en} at FURPAWS — Premium Pet Accessories UAE`;
 
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws.ae';
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws-uae.com';
   return {
     title: name,
     description,
@@ -107,7 +107,7 @@ export default async function ProductPage({ params }: PageProps) {
   const variants = getVariants(product.variants);
   const inStock = product.stock_quantity > 0;
 
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws.ae';
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws-uae.com';
   const avgRating = reviews.length > 0
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
     : null;

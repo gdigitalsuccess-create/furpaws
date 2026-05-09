@@ -96,7 +96,7 @@ function EnglishPrivacy({ updated }: { updated: string }) {
           <li>Withdraw consent at any time.</li>
           <li>Lodge a complaint with the UAE Data Office.</li>
         </ul>
-        <p className="mt-2">To exercise these rights, email us at <a href="mailto:support@furpaws.ae">support@furpaws.ae</a>.</p>
+        <p className="mt-2">To exercise these rights, email us at <a href="mailto:support@furpaws-uae.com">support@furpaws-uae.com</a>.</p>
       </Section>
 
       <Section title="9. Security">
@@ -108,7 +108,7 @@ function EnglishPrivacy({ updated }: { updated: string }) {
       </Section>
 
       <Section title="11. Contact">
-        <p><strong>FURPAWS</strong><br />Sharjah, United Arab Emirates<br />Email: <a href="mailto:support@furpaws.ae">support@furpaws.ae</a></p>
+        <p><strong>FURPAWS</strong><br />Sharjah, United Arab Emirates<br />Email: <a href="mailto:support@furpaws-uae.com">support@furpaws-uae.com</a></p>
       </Section>
     </LegalLayout>
   );
@@ -146,11 +146,11 @@ function ArabicPrivacy({ updated }: { updated: string }) {
       </Section>
 
       <Section title="٥. حقوقك (PDPL)">
-        <p>بموجب قانون PDPL الإماراتي، يحق لك الوصول إلى بياناتك، تصحيحها، طلب حذفها، وسحب موافقتك في أي وقت. للتواصل: <a href="mailto:support@furpaws.ae">support@furpaws.ae</a></p>
+        <p>بموجب قانون PDPL الإماراتي، يحق لك الوصول إلى بياناتك، تصحيحها، طلب حذفها، وسحب موافقتك في أي وقت. للتواصل: <a href="mailto:support@furpaws-uae.com">support@furpaws-uae.com</a></p>
       </Section>
 
       <Section title="٦. التواصل">
-        <p><strong>فيرباوز</strong><br />الشارقة، الإمارات العربية المتحدة<br />البريد الإلكتروني: <a href="mailto:support@furpaws.ae">support@furpaws.ae</a></p>
+        <p><strong>فيرباوز</strong><br />الشارقة، الإمارات العربية المتحدة<br />البريد الإلكتروني: <a href="mailto:support@furpaws-uae.com">support@furpaws-uae.com</a></p>
       </Section>
     </LegalLayout>
   );
