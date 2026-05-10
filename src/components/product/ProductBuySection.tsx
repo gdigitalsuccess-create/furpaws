@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useCartStore } from '@/store/cartStore';
 import { ShoppingBag, Minus, Plus, AlertTriangle, CheckCircle, ShieldCheck, RefreshCcw, Truck } from 'lucide-react';
 import { toast } from 'sonner';
-import { formatPrice } from '@/lib/pricing';
+import { formatPrice, calcMargin } from '@/lib/pricing';
 
 export type Variant = {
   name: string;
@@ -23,6 +23,8 @@ interface ProductBuySectionProps {
   firstImage: string;
   variants: Variant[];
   sizeLabel?: string | null;
+  retailPrice?: number;
+  isB2B?: boolean;
 }
 
 export default function ProductBuySection({
@@ -35,6 +37,8 @@ export default function ProductBuySection({
   firstImage,
   variants,
   sizeLabel,
+  retailPrice,
+  isB2B = false,
 }: ProductBuySectionProps) {
   const locale = useLocale();
   const t = useTranslations('product');
@@ -87,14 +91,32 @@ export default function ProductBuySection({
     <div className="flex flex-col gap-5">
 
       {/* Price */}
-      <div className="flex items-baseline gap-3">
-        <span className="text-3xl font-extrabold text-pink-primary">
-          {formatPrice(price, locale)}
-        </span>
-        {hasVariants && selectedIdx === null && (
-          <span className="text-sm text-text-muted">
-            {locale === 'ar' ? 'اختر الحجم/الوزن' : 'Select a variant'}
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-baseline gap-3 flex-wrap">
+          <span className="text-3xl font-extrabold text-pink-primary">
+            {formatPrice(price, locale)}
           </span>
+          {isB2B && retailPrice && (
+            <>
+              <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-700">
+                Your Price
+              </span>
+              <span className="rounded-full bg-violet-100 px-2.5 py-0.5 text-xs font-bold text-violet-700">
+                Margin {calcMargin(retailPrice, price)}%
+              </span>
+            </>
+          )}
+          {hasVariants && selectedIdx === null && (
+            <span className="text-sm text-text-muted">
+              {locale === 'ar' ? 'اختر الحجم/الوزن' : 'Select a variant'}
+            </span>
+          )}
+        </div>
+        {isB2B && retailPrice && (
+          <div className="flex items-center gap-2 text-sm text-text-muted">
+            <span className="line-through">{formatPrice(retailPrice, locale)}</span>
+            <span>Retail</span>
+          </div>
         )}
       </div>
 

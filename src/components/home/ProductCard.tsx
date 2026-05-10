@@ -6,7 +6,7 @@ import { Link } from '@/i18n/navigation';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { ShoppingBag, Star, Heart } from 'lucide-react';
-import { formatPrice } from '@/lib/pricing';
+import { formatPrice, calcMargin } from '@/lib/pricing';
 import type { Product } from '@/types/database';
 
 type ProductCardProps = {
@@ -149,13 +149,28 @@ export default function ProductCard({ product, rating = 0, reviewCount = 0, isNe
           )}
         </div>
 
-        <div className="mb-4 flex items-center gap-2 flex-wrap">
-          <span className="text-lg font-bold text-text-dark">
-            {formatPrice(price, locale)}
-          </span>
-          {isB2BPrice && (
-            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-700">
-              B2B
+        <div className="mb-4 flex flex-col gap-1">
+          {isB2BPrice ? (
+            <>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-lg font-bold text-text-dark">
+                  {formatPrice(price, locale)}
+                </span>
+                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-700">
+                  Your Price
+                </span>
+                <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold text-violet-700">
+                  Margin {calcMargin(product.price_retail, price)}%
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-text-muted">
+                <span className="line-through">{formatPrice(product.price_retail, locale)}</span>
+                <span>Retail</span>
+              </div>
+            </>
+          ) : (
+            <span className="text-lg font-bold text-text-dark">
+              {formatPrice(price, locale)}
             </span>
           )}
         </div>

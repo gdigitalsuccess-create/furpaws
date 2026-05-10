@@ -24,6 +24,10 @@ export function getDisplayPrice(
   return priceRetail;
 }
 
+export function calcMargin(retail: number, b2b: number): number {
+  return Math.round(((retail - b2b) / retail) * 100);
+}
+
 export function formatPrice(amount: number, locale: string = 'en'): string {
   return new Intl.NumberFormat(locale === 'ar' ? 'ar-AE' : 'en-AE', {
     style: 'currency',

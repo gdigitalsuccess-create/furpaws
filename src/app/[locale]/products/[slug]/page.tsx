@@ -209,6 +209,8 @@ export default async function ProductPage({ params }: PageProps) {
                 ? (specs['Size'] ?? specs['size'] ?? specs['Weight'] ?? specs['weight'] ?? specs['Taille'] ?? specs['Poids'] ?? null)
                 : null
             }
+            retailPrice={product.price_retail}
+            isB2B={(userRole === 'b2b' || userRole === 'admin') && product.price_b2b !== null}
           />
 
           {/* Back in stock */}
