@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { LayoutDashboard, Package, ShoppingCart, Users, Star, Tag, LogOut } from 'lucide-react';
 import { assertAdmin } from '@/lib/assertAdmin';
 import { createClient } from '@/lib/supabase/server';
+import AdminSignOutButton from '@/components/auth/AdminSignOutButton';
 
 const NAV = [
   { href: '/admin',          icon: LayoutDashboard, label: 'Dashboard' },
@@ -49,14 +50,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           ))}
         </nav>
 
-        <div className="border-t border-gray-200 p-3">
+        <div className="border-t border-gray-200 p-3 space-y-0.5">
           <Link
             href="/en"
-            className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400 hover:text-gray-600 transition-colors"
+            className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
           >
             <LogOut className="h-4 w-4" />
             Back to Site
           </Link>
+          <AdminSignOutButton />
         </div>
       </aside>
 
