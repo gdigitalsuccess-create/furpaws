@@ -113,9 +113,9 @@ export default function ProductBuySection({
           )}
         </div>
         {isB2B && retailPrice && (
-          <div className="flex items-center gap-2 text-sm text-text-muted">
+          <div className="flex items-center gap-2 text-sm font-bold text-text-muted">
             <span>{formatPrice(retailPrice, locale)}</span>
-            <span>Retail</span>
+            <span className="font-normal">Retail</span>
           </div>
         )}
       </div>

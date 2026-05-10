@@ -163,9 +163,9 @@ export default function ProductCard({ product, rating = 0, reviewCount = 0, isNe
                   Margin {calcMargin(product.price_retail, price)}%
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 text-xs text-text-muted">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-text-muted">
                 <span>{formatPrice(product.price_retail, locale)}</span>
-                <span>Retail</span>
+                <span className="font-normal">Retail</span>
               </div>
             </>
           ) : (
