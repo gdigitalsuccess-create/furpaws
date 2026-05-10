@@ -17,6 +17,11 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
     admin.from('categories').select('id, name_en, name_ar, slug, parent_id, sort_order').eq('is_active', true).order('sort_order'),
     admin.from('products').select('brand').not('brand', 'is', null),
   ]);
+
+  if (productRes.error && !productRes.data) {
+    throw new Error(`Failed to load product: ${productRes.error.message}`);
+  }
+
   const product = productRes.data;
   const categories = categoriesRes.data;
   const brands = [...new Set(
