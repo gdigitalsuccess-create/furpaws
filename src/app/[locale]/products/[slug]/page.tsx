@@ -100,8 +100,8 @@ export default async function ProductPage({ params }: PageProps) {
   const basePrice = getDisplayPrice(product.price_retail, product.price_b2b, userRole);
 
   const reviews = await fetchProductReviews(product.id);
-  const name = locale === 'ar' ? product.name_ar : product.name_en;
-  const description = locale === 'ar' ? product.description_ar : product.description_en;
+  const name = locale === 'ar' ? (product.name_ar || product.name_en) : product.name_en;
+  const description = locale === 'ar' ? (product.description_ar || product.description_en) : product.description_en;
   const images = getImages(product.images);
   const specs = getSpecs(product.specs);
   const variants = getVariants(product.variants);

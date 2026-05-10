@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Upload, X, Link as LinkIcon, Languages, Plus, Trash2 } from 'lucide-react';
+import { Loader2, Upload, X, Link as LinkIcon, Plus, Trash2 } from 'lucide-react';
 import type { Database } from '@/types/database';
 import BrandCombobox from './BrandCombobox';
 
@@ -21,7 +21,7 @@ export type ProductVariant = {
 
 const schema = z.object({
   name_en:         z.string().min(2),
-  name_ar:         z.string().min(2),
+  name_ar:         z.string().optional(),
   slug:            z.string().min(2).regex(/^[a-z0-9-]+$/, 'Lowercase letters, numbers and hyphens only'),
   description_en:  z.string().optional(),
   description_ar:  z.string().optional(),
@@ -87,9 +87,6 @@ export default function ProductForm({ categories, brands = [], product }: Props)
   const [variants, setVariants] = useState<ProductVariant[]>(initialVariants);
   const [newVariant, setNewVariant] = useState<ProductVariant>({ name: '', price: 0, stock: 0 });
 
-  const [translating, setTranslating] = useState(false);
-  const [translateError, setTranslateError] = useState('');
-
   const {
     register,
     handleSubmit,
@@ -100,10 +97,8 @@ export default function ProductForm({ categories, brands = [], product }: Props)
     resolver: zodResolver(schema),
     defaultValues: product ? {
       name_en:        product.name_en,
-      name_ar:        product.name_ar,
       slug:           product.slug,
       description_en: product.description_en ?? '',
-      description_ar: product.description_ar ?? '',
       price_retail:   product.price_retail,
       price_b2b:      product.price_b2b ?? undefined,
       brand:          product.brand ?? '',
@@ -119,34 +114,6 @@ export default function ProductForm({ categories, brands = [], product }: Props)
       stock_quantity: 0,
     },
   });
-
-  async function handleTranslate() {
-    const nameEn = watch('name_en');
-    const descEn = watch('description_en');
-    if (!nameEn?.trim()) return;
-    setTranslating(true);
-    setTranslateError('');
-    try {
-      const requests = [
-        fetch('/api/translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: nameEn }) }),
-        descEn?.trim()
-          ? fetch('/api/translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: descEn }) })
-          : Promise.resolve(null),
-      ];
-      const [nameRes, descRes] = await Promise.all(requests);
-      const nameData = await nameRes?.json() as { translated?: string; error?: string };
-      if (nameData?.error) { setTranslateError(nameData.error); return; }
-      if (nameData?.translated) setValue('name_ar', nameData.translated, { shouldValidate: true });
-      if (descRes) {
-        const descData = await descRes.json() as { translated?: string };
-        if (descData?.translated) setValue('description_ar', descData.translated, { shouldValidate: true });
-      }
-    } catch {
-      setTranslateError('Translation failed. Check your connection.');
-    } finally {
-      setTranslating(false);
-    }
-  }
 
   function addUrlImage() {
     const url = urlInput.trim();
@@ -244,38 +211,15 @@ export default function ProductForm({ categories, brands = [], product }: Props)
 
       {/* Names + Descriptions */}
       <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-4">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Name & Description</span>
-          <div className="flex items-center gap-3">
-            {translateError && <p className="text-xs text-red-500">{translateError}</p>}
-            <button type="button" onClick={handleTranslate} disabled={translating}
-              className="flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-xs font-semibold text-white hover:bg-violet-700 disabled:opacity-60 transition-colors">
-              {translating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Languages className="h-3.5 w-3.5" />}
-              {translating ? 'Translating...' : 'Auto-translate to Arabic →'}
-            </button>
-          </div>
+        <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Name & Description</span>
+        <div>
+          <label className={labelCls}>Name (EN)</label>
+          <input {...register('name_en')} placeholder="Premium Dog Collar" className={inputCls} />
+          {errors.name_en && <p className="mt-1 text-xs text-red-500">{errors.name_en.message}</p>}
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className={labelCls}>Name (EN)</label>
-            <input {...register('name_en')} placeholder="Premium Dog Collar" className={inputCls} />
-            {errors.name_en && <p className="mt-1 text-xs text-red-500">{errors.name_en.message}</p>}
-          </div>
-          <div>
-            <label className={labelCls}>Name (AR)</label>
-            <input {...register('name_ar')} placeholder="يُملأ automatiquement" dir="rtl" className={inputCls} />
-            {errors.name_ar && <p className="mt-1 text-xs text-red-500">{errors.name_ar.message}</p>}
-          </div>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className={labelCls}>Description (EN)</label>
-            <textarea {...register('description_en')} rows={4} placeholder="Product description in English..." className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-pink-primary focus:outline-none focus:ring-2 focus:ring-pink-primary/20 resize-none" />
-          </div>
-          <div>
-            <label className={labelCls}>Description (AR)</label>
-            <textarea {...register('description_ar')} rows={4} dir="rtl" placeholder="يُملأ automatiquement..." className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-pink-primary focus:outline-none focus:ring-2 focus:ring-pink-primary/20 resize-none" />
-          </div>
+        <div>
+          <label className={labelCls}>Description (EN)</label>
+          <textarea {...register('description_en')} rows={4} placeholder="Product description in English..." className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-pink-primary focus:outline-none focus:ring-2 focus:ring-pink-primary/20 resize-none" />
         </div>
       </div>
 

@@ -28,7 +28,7 @@ export default function ProductCard({ product, rating = 0, reviewCount = 0, isNe
   const isWished = useWishlistStore((s) => s.has(product.id));
   const [imgError, setImgError] = useState(false);
 
-  const name = locale === 'ar' ? product.name_ar : product.name_en;
+  const name = locale === 'ar' ? (product.name_ar || product.name_en) : product.name_en;
   const images = Array.isArray(product.images) ? (product.images as string[]) : [];
   const firstImage = images[0] && images[0] !== '' ? images[0] : null;
   const showImage = firstImage && !imgError;

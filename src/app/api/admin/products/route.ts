@@ -5,7 +5,7 @@ import { assertAdmin } from '@/lib/assertAdmin';
 
 const productSchema = z.object({
   name_en:        z.string().min(1).max(200),
-  name_ar:        z.string().min(1).max(200),
+  name_ar:        z.string().max(200).optional(),
   slug:           z.string().min(1).max(200).regex(/^[a-z0-9-]+$/),
   description_en: z.string().max(5000).optional(),
   description_ar: z.string().max(5000).optional(),
@@ -49,7 +49,12 @@ export async function POST(request: Request) {
     }
 
     const admin = createAdminClient();
-    const data = { ...parsed.data, slug: await findUniqueSlug(admin, parsed.data.slug) };
+    const data = {
+      ...parsed.data,
+      slug: await findUniqueSlug(admin, parsed.data.slug),
+      name_ar: parsed.data.name_ar || parsed.data.name_en,
+      description_ar: parsed.data.description_ar || parsed.data.description_en || null,
+    };
 
     const { data: row, error } = await admin
       .from('products')

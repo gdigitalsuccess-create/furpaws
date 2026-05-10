@@ -72,7 +72,7 @@ export default function FrequentlyBoughtTogetherClient({ products, locale }: Pro
               <Link href={`/products/${p.slug}`} onClick={(e) => e.stopPropagation()}>
                 <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-gray-100">
                   {p.image ? (
-                    <Image src={p.image} alt={isAr ? p.name_ar : p.name_en} fill className="object-cover" sizes="56px" />
+                    <Image src={p.image} alt={isAr ? (p.name_ar || p.name_en) : p.name_en} fill className="object-cover" sizes="56px" />
                   ) : (
                     <div className="h-full w-full bg-gray-200" />
                   )}
@@ -80,7 +80,7 @@ export default function FrequentlyBoughtTogetherClient({ products, locale }: Pro
               </Link>
               <div className="max-w-[120px]">
                 <p className="line-clamp-2 text-xs font-medium text-text-dark leading-tight">
-                  {isAr ? p.name_ar : p.name_en}
+                  {isAr ? (p.name_ar || p.name_en) : p.name_en}
                 </p>
                 <p className="mt-1 text-sm font-bold text-pink-primary">{(p.display_price ?? p.price_retail).toFixed(2)} AED</p>
               </div>
