@@ -192,7 +192,18 @@ export default function ProductForm({ categories, brands = [], product }: Props)
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data.error ?? 'Something went wrong.');
+        const err = data.error;
+        if (typeof err === 'string') {
+          setError(err);
+        } else if (err && typeof err === 'object') {
+          const fieldMsgs = Object.entries(err.fieldErrors ?? {})
+            .map(([f, msgs]) => `${f}: ${(msgs as string[]).join(', ')}`)
+            .join(' | ');
+          const formMsgs = (err.formErrors ?? []).join(', ');
+          setError(fieldMsgs || formMsgs || 'Validation error. Check your fields.');
+        } else {
+          setError('Something went wrong.');
+        }
         return;
       }
 
