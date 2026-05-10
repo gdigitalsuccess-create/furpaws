@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { redirect } from 'next/navigation';
 import { LayoutDashboard, Package, ShoppingCart, Users, Star, Tag, LogOut } from 'lucide-react';
 import { assertAdmin } from '@/lib/assertAdmin';
+import { createClient } from '@/lib/supabase/server';
 
 const NAV = [
   { href: '/admin',          icon: LayoutDashboard, label: 'Dashboard' },
@@ -14,13 +15,17 @@ const NAV = [
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/admin/login');
+
   let isAdmin = false;
   try {
     isAdmin = await assertAdmin();
   } catch {
     // treat any error as unauthenticated
   }
-  if (!isAdmin) redirect('/en/account/login');
+  if (!isAdmin) redirect('/admin/login?unauthorized=1');
   return (
     <div className="flex min-h-screen bg-gray-50">
 
