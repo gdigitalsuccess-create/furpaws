@@ -10,6 +10,11 @@ export async function middleware(request: NextRequest) {
 
   // Admin routes — server-side role check, no locale prefix
   if (pathname.startsWith('/admin')) {
+    // Login page is publicly accessible — skip auth check
+    if (pathname === '/admin/login') {
+      return NextResponse.next({ request });
+    }
+
     const response = NextResponse.next({ request });
 
     const supabase = createServerClient(
@@ -35,9 +40,7 @@ export async function middleware(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      const loginUrl = new URL('/en/account/login', request.url);
-      loginUrl.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(loginUrl);
+      return NextResponse.redirect(new URL('/admin/login', request.url));
     }
 
     const { data: profile } = await supabase
@@ -47,9 +50,7 @@ export async function middleware(request: NextRequest) {
       .single();
 
     if (profile?.role !== 'admin') {
-      const loginUrl = new URL('/en/account/login', request.url);
-      loginUrl.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(loginUrl);
+      return NextResponse.redirect(new URL('/admin/login?unauthorized=1', request.url));
     }
 
     return response;
