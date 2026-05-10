@@ -114,7 +114,7 @@ export default function ProductBuySection({
         </div>
         {isB2B && retailPrice && (
           <div className="flex items-center gap-2 text-sm text-text-muted">
-            <span className="line-through">{formatPrice(retailPrice, locale)}</span>
+            <span>{formatPrice(retailPrice, locale)}</span>
             <span>Retail</span>
           </div>
         )}
