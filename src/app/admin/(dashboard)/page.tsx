@@ -118,7 +118,7 @@ export default async function AdminDashboardPage() {
   ];
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <AdminHero
         name={adminName}
         totalOrders={totalOrders ?? 0}
@@ -141,12 +141,12 @@ export default async function AdminDashboardPage() {
 
       {/* Revenue Chart */}
       <div className="mb-6 rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+        <div className="flex flex-col gap-2 border-b border-gray-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-pink-primary" />
             <h2 className="font-semibold text-gray-900">Revenue — Last 30 Days</h2>
           </div>
-          <div className="flex items-center gap-3 text-sm">
+          <div className="flex flex-wrap items-center gap-3 text-sm">
             <span className="text-gray-500">This month: <span className="font-semibold text-gray-900">{formatPrice(thisMonthRev, 'en')}</span></span>
             {growth !== null && (
               <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${growth >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>

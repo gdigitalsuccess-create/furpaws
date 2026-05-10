@@ -5,6 +5,7 @@ import { LayoutDashboard, Package, ShoppingCart, Users, Star, Tag, ArrowLeft } f
 import { assertAdmin } from '@/lib/assertAdmin';
 import { createClient } from '@/lib/supabase/server';
 import AdminSignOutButton from '@/components/auth/AdminSignOutButton';
+import AdminMobileNav from '@/components/admin/AdminMobileNav';
 
 const NAV = [
   { href: '/admin',          icon: LayoutDashboard, label: 'Dashboard' },
@@ -28,10 +29,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
   if (!isAdmin) redirect('/admin/login?unauthorized=1');
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen flex-col bg-gray-50 md:flex-row">
 
-      {/* Sidebar */}
-      <aside className="flex w-56 shrink-0 flex-col border-e border-gray-200 bg-white">
+      {/* Mobile top bar + drawer */}
+      <AdminMobileNav />
+
+      {/* Sidebar — desktop only */}
+      <aside className="hidden md:flex w-56 shrink-0 flex-col border-e border-gray-200 bg-white">
         <div className="flex h-16 items-center justify-between border-b border-gray-200 px-4">
           <Image src="/logo.png" alt="FurPaws" width={120} height={40} className="h-9 w-auto" priority />
           <span className="rounded bg-pink-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-pink-primary uppercase">Admin</span>
