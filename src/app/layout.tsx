@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
+import { SITE_CONFIG } from '@/config/site.config';
 import './globals.css';
 
 const geistSans = Geist({
@@ -10,22 +11,21 @@ const geistSans = Geist({
 
 export const metadata: Metadata = {
   title: {
-    default: 'FURPAWS — Pet Accessories UAE',
-    template: '%s | FURPAWS',
+    default: `${SITE_CONFIG.name} — ${SITE_CONFIG.tagline}`,
+    template: `%s | ${SITE_CONFIG.name}`,
   },
-  description: 'Premium pet accessories distributor in Sharjah, UAE. Shop for dogs, cats and small animals.',
-  keywords: ['pet accessories UAE', 'pet shop Sharjah', 'dog food UAE', 'cat accessories', 'pet supplies Dubai', 'furpaws'],
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://furpaws-uae.com'),
+  description: SITE_CONFIG.description,
+  metadataBase: new URL(SITE_CONFIG.domain),
   openGraph: {
-    siteName: 'FURPAWS',
-    locale: 'en_AE',
+    siteName: SITE_CONFIG.name,
+    locale: SITE_CONFIG.ogLocale,
     type: 'website',
-    images: [{ url: '/hero.jpg', width: 1200, height: 630, alt: 'FURPAWS — Pet Accessories UAE' }],
+    images: [{ url: SITE_CONFIG.heroBgPath, width: 1200, height: 630, alt: `${SITE_CONFIG.name} — ${SITE_CONFIG.tagline}` }],
   },
   twitter: {
     card: 'summary_large_image',
-    site: '@furpaws_ae',
-    images: ['/hero.jpg'],
+    site: SITE_CONFIG.twitter,
+    images: [SITE_CONFIG.heroBgPath],
   },
   robots: {
     index: true,

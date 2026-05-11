@@ -47,7 +47,7 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  /* FURPAWS brand tokens */
+  /* Brand tokens — valeurs gérées par src/config/theme.config.ts */
   --color-pink-primary: #E91E63;
   --color-pink-accent: #F48FB1;
   --color-pink-light: #FCE4EC;

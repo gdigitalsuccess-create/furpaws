@@ -1,8 +1,10 @@
 import type { MetadataRoute } from 'next';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { SITE_CONFIG } from '@/config/site.config';
+import { REGION_CONFIG } from '@/config/region.config';
 
-const BASE = 'https://furpaws-uae.com';
-const LOCALES = ['en', 'ar'];
+const BASE     = SITE_CONFIG.domain;
+const LOCALES  = REGION_CONFIG.locales;
 const CATEGORIES = ['dogs', 'cats', 'small-animals', 'veterinary'];
 
 function loc(path: string) {

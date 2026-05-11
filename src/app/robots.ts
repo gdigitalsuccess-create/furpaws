@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next';
+import { SITE_CONFIG } from '@/config/site.config';
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -9,6 +10,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/admin/', '/api/', '/en/account/', '/ar/account/', '/en/checkout/', '/ar/checkout/'],
       },
     ],
-    sitemap: 'https://furpaws-uae.com/sitemap.xml',
+    sitemap: `${SITE_CONFIG.domain}/sitemap.xml`,
   };
 }
